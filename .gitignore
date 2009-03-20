@@ -1,0 +1,4 @@
+# Ignore executable file.
+bin2gif
+# Ignore objects and archives.
+*.[oa]
