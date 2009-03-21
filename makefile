@@ -36,3 +36,7 @@ install:
 uninstall:
 	rm -f $(INSTALL_DIR_HOME)/$(PNAME)
 	rm -f $(INSTALL_DIR_USR)/$(PNAME)
+
+test:
+	$(CXX) ./tests/tests.cpp -o ./tests/make_test_files
+	./tests/make_test_files

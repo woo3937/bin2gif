@@ -2,3 +2,5 @@
 bin2gif
 # Ignore objects and archives.
 *.[oa]
+# Ignore text editors backup files.
+*~

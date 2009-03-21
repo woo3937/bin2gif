@@ -7,6 +7,8 @@ namespace sns
 		int file_patterns_count;
 		char** file_patterns;
 		
+		bool debug;
+		
 		int header;
 		int footer;
 		

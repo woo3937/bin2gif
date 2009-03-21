@@ -15,15 +15,30 @@ using namespace sns;
 //---------------------------------------------------------------------------
 void display_help(char *program_name)
 {
+	program_name = strrchr(program_name, '/') + 1;
+	
     printf("Usage: %s [options] [--] <filename|dirname|pattern>\n", program_name);
-	printf("Utility to convert binary 2D data file into GIF image.\n");
-	printf("Example: %s --type real --max 1 ~/results/today/\n\n", program_name);
-	printf("Options:\n");
+	printf("Utility to convert binary 2D data file into GIF images.\n");
+	printf("Examples:\n");
+	printf("  %s ~/results/today/*.cpl\n", program_name);
+	printf("  %s --type real --max 1 ~/results/today/\n", program_name);
+	
+	printf("\nOptions:\n");
     printf("  --header    number of point per impulse\n");
 	printf("  --footer    number of point per impulse\n");
     
 	printf("\nAuthor: Oleg Efimov.\n");
 	printf("Report bugs to <efimovov@yandex.ru>.\n");
+}
+//---------------------------------------------------------------------------
+void display_version(char *program_name)
+{
+	program_name = strrchr(program_name, '/') + 1;
+	
+	printf("%s version 1.0\n", program_name);
+	printf("Utility to convert binary 2D data file into GIF images.\n");
+	
+	printf("\nAuthor: Oleg Efimov.\n");
 }
 //---------------------------------------------------------------------------
 void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameters)
@@ -32,13 +47,16 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 	opterr = 0;
 	
 	static struct option long_options[] = {
-		{"header", required_argument, 0, 0},
-		{"footer", required_argument, 0, 0}
+		{"header", required_argument, NULL, NULL},
+		{"footer", required_argument, NULL, NULL},
+		{"help", no_argument, NULL, 'h'},
+		{"version", no_argument, NULL, 'v'},
+		{"verbose", no_argument, NULL, NULL}
 	};
 	int option_index = 0;
 
     
-    while ( (c = getopt_long/*_only*/(argc, argv, "h", long_options, &option_index)) != -1 ) {
+    while ( (c = getopt_long/*_only*/(argc, argv, "hvd", long_options, &option_index)) != -1 ) {
         switch(c) {
             case 0:
 				if( strcmp(long_options[option_index].name, "header") == 0 ) {
@@ -53,6 +71,12 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
             case 'h':
                 display_help(argv[0]);
                 exit(0);
+            case 'v':
+                display_version(argv[0]);
+                exit(0);
+			case 'd':
+				p_parameters->debug = true;
+				break;
             default:
                 break;
         }
@@ -71,9 +95,48 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 	}
 }
 //---------------------------------------------------------------------------
+void process_file(char *filename_bin, bin2gif_parameters p_parameters)
+{
+	if ( util::is_dir(filename_bin) ) {
+		printf("Directory %s: \033[70G\033[1;33m[Skipped]\033[0m\n", filename_bin);
+		return;
+	} else if ( strstr(filename_bin, ".gif") != NULL ) {
+		printf("File %s: \033[70G\033[1;33m[Skipped]\033[0m\n", filename_bin);
+		return;
+	}
+	char filename_gif[1024];
+	char filename_type_fix[] = "_n.gif\0";
+	filename_type_fix[1] = p_parameters.to_type;
+	char* ch;
+	
+	filename_gif[0] = '\0';
+	ch = strrchr(filename_bin, '.');
+	strncat(filename_gif, filename_bin, ch - filename_bin );
+	
+	strcat(filename_gif, filename_type_fix);
+	
+	printf("File %s:\n", filename_bin);
+	
+	if ( visual::convert_cpl_file_to_gif(filename_bin, filename_gif, p_parameters) == 0 ) {
+		printf("  -> %s", filename_gif);
+		printf("\033[70G\033[0;32m[Done]\033[0m\n");
+	} else {
+		printf("\033[70G\033[0;31m[Failed]\033[0m\n");
+	}
+}
+//---------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
+	int i = 0, j = 0;
+	
+	char *filename_bin = new char[1024];
+	if ( !filename_bin ) {
+		return 1;
+	}
+	
 	bin2gif_parameters p_parameters;
+	
+	p_parameters.debug = false;
 	
 	p_parameters.file_patterns_count = 0;
 	p_parameters.header = 0;
@@ -84,60 +147,63 @@ int main(int argc, char *argv[])
 	
 	get_program_options(argc, argv, &p_parameters);
 	
-	printf("Header: %d\n", p_parameters.header);
-	printf("Footer: %d\n", p_parameters.footer);
-	for ( int i = 0; i < p_parameters.file_patterns_count; i++ ) {
-		printf("Pattern: %s\n", p_parameters.file_patterns[i]);
+	glob_t globbuf;
+	globbuf.gl_offs = 0;
+	
+	// Debug {{{
+	if ( p_parameters.debug ) {
+		printf("\033[0;33mDebug {{{\n");
+		printf("Header: %d\n", p_parameters.header);
+		printf("Footer: %d\n", p_parameters.footer);
+		printf("Files/directories to process:\n");
+		for ( i = 0; i < p_parameters.file_patterns_count; i++ ) {
+			printf("\t%s\n", p_parameters.file_patterns[i]);
+		}
+
+		for ( i = 0; i < p_parameters.file_patterns_count; i++ ) {
+			glob(p_parameters.file_patterns[i], GLOB_DOOFFS, NULL, &globbuf);
+			printf("%s:\n", p_parameters.file_patterns[i]);
+			for ( j = 0; j < globbuf.gl_pathc; j++ ) {
+				printf("\t%s\n", globbuf.gl_pathv[j]);
+			}
+		}
+		printf("Debug }}}\033[0m\n");
 	}
+	// Debug }}}
 	
-	if ( util::is_dir(argv[1]) ) {
-	
-	    dirent *de;
-	    DIR *dp;
-	
-	    if ( !(dp = opendir(argv[1])) ) {
-			printf("Error: Cannot read directory.\n");
-			return 1;
-	    }
-	    
-	    char filename_cpl[1024];
-	    char filename_gif[1024];
-	    char filename_type_fix[] = "_n.gif\0";
-	    filename_type_fix[1] = p_parameters.to_type;
-	    char* ch;
-	    
-	    printf("Processing files in directory %s...\n", argv[1]);
-	    
-	    while ( de = readdir(dp) ) {
-			strcpy(filename_cpl, argv[1]);
-			strcpy(filename_cpl + strlen(filename_cpl), de->d_name);
+	for ( i = 0; i < p_parameters.file_patterns_count; i++ ) {
+		glob(p_parameters.file_patterns[i], GLOB_DOOFFS, NULL, &globbuf);
+		for ( j = 0; j < globbuf.gl_pathc; j++ ) {
 			
-			if ( strstr(de->d_name, "cpl") == 0 || util::is_dir(filename_cpl) ) {
-				printf("File %s: \033[1;31[Skipped]\033[0m\n", de->d_name);
-				continue;
-			} else {
-				printf("File %s: \033[1;32 [Done]\033[0m\n", de->d_name);
-				continue;
+			if ( util::is_dir(globbuf.gl_pathv[j]) ) {
+			
+				dirent *de;
+				DIR *dp;
+			
+				if ( !(dp = opendir(globbuf.gl_pathv[j])) ) {
+					printf("\033[0;31m[Error:\033[0m Cannot read directory %s.\n", globbuf.gl_pathv[j]);
+					return 1;
+				}
+
+				printf("Processing %s:\n", globbuf.gl_pathv[j]);
+				
+				while ( de = readdir(dp) ) {
+					strcpy(filename_bin, globbuf.gl_pathv[j]);
+					if( filename_bin[strlen(filename_bin)-1] != '/' ) {
+						strcpy(filename_bin + strlen(filename_bin), "/");
+					}
+					strcpy(filename_bin + strlen(filename_bin), de->d_name);
+					
+					process_file(filename_bin, p_parameters);
+				}
+				
+				closedir(dp);
+			
+			} else { // Maybe file?
+				process_file(globbuf.gl_pathv[j], p_parameters);
 			}
-			
-			strcpy(filename_gif, filename_cpl);
-			ch = strstr(filename_gif, ".cpl");
-			strcpy(ch, filename_type_fix);
-			
-			if ( visual::convert_cpl_file_to_gif(filename_cpl, filename_gif, p_parameters) == 0 ) {
-				printf("File %s: (%s) \033[1;32 [Done]\033[0m\n", de->d_name, filename_gif);
-			}
-	    }
-	    
-	    closedir(dp);
-	
-	}/* else {
-	
-	    if ( visual::convert_cpl_file_to_gif(argv[1], argv[2], p_parameters) == 0 ) {
-		printf("Single file %s: \033[32 [Done]\033[0m\n", argv[1]);
-	    }
-	
-	}*/
-	
+		}
+	}
+
 	return 0;
 }

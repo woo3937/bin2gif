@@ -53,7 +53,7 @@ namespace sns
 				return 0;
 			}
 			
-			file_size /= sizeof(complex<double>); //printf("Size: %d, n: %lf, n*n: \n", file_size, (int)(sqrt((double)file_size)), ((int)(sqrt((double)file_size)))*((int)(sqrt((double)file_size))));
+			file_size /= sizeof(complex<double>);
 			n = (off_t)(sqrt((double)file_size));
 			if ( file_size != n*n ) {
 				n = 512;
@@ -68,20 +68,20 @@ namespace sns
 			complex<double> *data = new complex<double>[n*n];
 			
 			if ( !data ) {
-				printf("\033[1;31\033[1mError:\033[22m Cannot allocate memory for data.\033[0m\n");
+				printf("Error: Cannot allocate memory for data.");
 				return 0;
 			}
 
 			fp = fopen(filename, "r");
 			
 			if ( !fp ) {
-				printf("\033[1;31\033[1mError:\033[22m Cannot open input file %s  for reading.\033[0m\n", filename);
+				printf("Error:m Cannot open input file %s  for reading.", filename);
 				delete[] data;
 				return 0;
 			}
 			
 			if ( fread(data, sizeof(complex<double>), n*n, fp) != n*n ) {
-				printf("\033[1;31\033[1mError:\033[22m Bad file format or corrupted file.\033[0m\n");
+				printf("Error: Bad file format or corrupted file.");
 				delete[] data;
 				fclose(fp);
 				return 0;
@@ -92,7 +92,7 @@ namespace sns
 			double *ddata = new double[p_parameters.to_size*p_parameters.to_size];
 			
 			if ( !ddata ) {
-				printf("Error: Cannot allocate memory for data.\n");
+				printf("Error: Cannot allocate memory for data.");
 				delete[] data;
 				return 0;
 			}
@@ -100,7 +100,7 @@ namespace sns
 			im = gdImageCreateTrueColor(p_parameters.to_size, p_parameters.to_size);
 
 			if ( !im ) {
-				printf("Error: Cannot create image.\n");
+				printf("Error: Cannot create image.");
 				delete[] data;
 				delete[] ddata;
 				return 0;
@@ -131,7 +131,7 @@ namespace sns
 			int c_white = gdImageColorAllocate(im, 255, 255, 255);
 			int c_color;
 
-			double d_max, d_min, d_middle;
+			double d_max, d_min;
 			
 			if ( p_parameters.to_type == 'p' ) {
 				d_min = -M_PI;
@@ -143,8 +143,6 @@ namespace sns
 				d_max = p_parameters.to_amp;
 				d_min = ( p_parameters.to_type == 'n' || p_parameters.to_type == 'a' ) ? 0 : -p_parameters.to_amp;
 			}
-			
-			d_middle = d_max/2 + d_min/2;
 
 
 			for ( i = 0; i < p_parameters.to_size; i++ ) {
@@ -174,7 +172,7 @@ namespace sns
 			FILE *fp = fopen(filename_gif, "wb");
 			
 			if ( !fp ) {
-				printf("\033[1;31\033[1mError:\033[22m Cannot open output file %s for writing.\033[0m\n", filename_gif);
+				printf("Error: Cannot open output file %s for writing.", filename_gif);
 				gdImageDestroy(im);
 				return 1;
 			}
