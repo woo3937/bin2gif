@@ -1,7 +1,7 @@
 PNAME = bin2gif
 PFILES = main.cpp ./src/util_visualize.cpp ./src/util_fs.cpp
 CXX = icpc
-LIBS = -lgd -lpng -lz -lm -openmp
+LIBS = -lgd -lm -openmp
 
 HOSTNAME = $(shell hostname)
 
@@ -38,5 +38,5 @@ uninstall:
 	rm -f $(INSTALL_DIR_USR)/$(PNAME)
 
 test:
-	$(CXX) ./tests/tests.cpp -o ./tests/make_test_files
-	./tests/make_test_files
+	$(CXX) ./tests/tests.cpp -o ./tests/make_test_files -lm -openmp
+	@./tests/make_test_files

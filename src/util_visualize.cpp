@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <cstdlib>
-#include <cmath>
 #include <complex>
 #include <algorithm>
 using namespace std;
@@ -21,13 +20,18 @@ namespace sns
 		{
 			return c.imag();
 		}
+		
+		enum binary_file_type {
+			t_double,
+			t_complex_double
+		};
 	
-		gdImagePtr get_image_from_cpl_file(char* filename, bin2gif_parameters p_parameters)
+		gdImagePtr get_image_from_binary_file(char* filename, bin2gif_parameters p_parameters)
 		{
 			gdImagePtr im;
 			FILE* fp = NULL;
 
-			int i = 0, j = 0, ii = 0, jj = 0;
+			int i = 0, j = 0, ii = 0, jj = 0, kk = 0;
 			int n = 0, factor = 1;
 			
 			double (*func)(const complex<double>&) = norm;
@@ -35,28 +39,33 @@ namespace sns
 			switch(p_parameters.to_type)
 			{
 				case 'n':
-				func = norm; break;
+					func = norm; break;
 				case 'a':
-				func = abs; break;
+					func = abs; break;
 				case 'r':
-				func = real; break;
+					func = real; break;
 				case 'i':
-				func = imag; break;
+					func = imag; break;
 				case 'p':
-				func = arg; break;
+					func = arg; break;
 			}
 			
-			off_t file_size = util::file_size(filename);
+			// Determine file type and image size {{{
+			
+			binary_file_type file_type = t_complex_double;
+			off_t file_size = util::file_size(filename) - p_parameters.header - p_parameters.footer, elements_in_file;
 			
 			if( file_size <= 0 ) {
-				printf("\033[1;31\033[1mError:\033[22m Cannot determine file size.\033[0m\n");
+				printf("Error: Cannot determine file size.\n");
 				return 0;
 			}
 			
-			file_size /= sizeof(complex<double>);
-			n = (off_t)(sqrt((double)file_size));
-			if ( file_size != n*n ) {
-				n = 512;
+			elements_in_file = file_size / sizeof(complex<double>);
+			n = (off_t)(sqrt((double)elements_in_file));
+			if ( elements_in_file != n*n ) {
+				file_type = t_double;
+				elements_in_file = file_size / sizeof(double);
+				n = (off_t)(sqrt((double)elements_in_file));
 			}
 			
 			if ( n < p_parameters.to_size ) {
@@ -65,7 +74,13 @@ namespace sns
 			
 			factor = n/p_parameters.to_size;
 			
-			complex<double> *data = new complex<double>[n*n];
+			void *data;
+
+			if ( file_type == t_complex_double ) {
+				data = new complex<double>[n*n];
+			} else {
+				data = new double[n*n];
+			}
 			
 			if ( !data ) {
 				printf("Error: Cannot allocate memory for data.");
@@ -75,12 +90,20 @@ namespace sns
 			fp = fopen(filename, "r");
 			
 			if ( !fp ) {
-				printf("Error:m Cannot open input file %s  for reading.", filename);
+				printf("Error: Cannot open input file %s  for reading.", filename);
 				delete[] data;
 				return 0;
 			}
 			
-			if ( fread(data, sizeof(complex<double>), n*n, fp) != n*n ) {
+			fseek(fp, p_parameters.header, SEEK_SET);
+			
+			if ( file_type == t_complex_double ) {
+				elements_in_file = fread(data, sizeof(complex<double>), n*n, fp);
+			} else {
+				elements_in_file = fread(data, sizeof(double), n*n, fp);
+			}
+			
+			if ( elements_in_file != n*n ) {
 				printf("Error: Bad file format or corrupted file.");
 				delete[] data;
 				fclose(fp);
@@ -111,17 +134,22 @@ namespace sns
 			#pragma omp parallel for private(d_value,j,ii,jj) shared(ddata)
 			for ( i = 0; i < p_parameters.to_size; i++ ) {
 				for ( j = 0; j < p_parameters.to_size; j++ ) {
-				
-				d_value = 0;
-				
-				for ( ii = 0; ii < factor; ii++ ) {
-					for ( jj = 0; jj < factor; jj++ ) {
-					d_value += func(data[n*(factor*i+ii)+(factor*j+jj)]);
+
+					d_value = 0;
+
+					for ( ii = 0; ii < factor; ii++ ) {
+						for ( jj = 0; jj < factor; jj++ ) {
+							kk = n*(factor*i+ii)+(factor*j+jj);
+							if ( file_type == t_complex_double ) {
+								d_value += func(static_cast<complex<double>*>(data)[kk]);
+							} else {
+								d_value += static_cast<double*>(data)[kk];
+							}
+						}
 					}
-				}
-				
-				ddata[p_parameters.to_size*i+j] = d_value/factor/factor;
-				
+
+					ddata[p_parameters.to_size*i+j] = d_value/factor/factor;
+
 				}
 			}
 
@@ -144,15 +172,14 @@ namespace sns
 				d_min = ( p_parameters.to_type == 'n' || p_parameters.to_type == 'a' ) ? 0 : -p_parameters.to_amp;
 			}
 
-
 			for ( i = 0; i < p_parameters.to_size; i++ ) {
 				for ( j = 0; j < p_parameters.to_size; j++ ) {
-				
-				c_color = (int)(255*(ddata[p_parameters.to_size*i+j]-d_min)/(d_max-d_min));
-				c_color = ( c_color > 255 ) ? 255 : ( (c_color < 0) ? 0 : c_color  );
-				c_color = gdImageColorAllocate(im, c_color, c_color, c_color);
-				gdImageSetPixel(im, i, j, c_color );
-				
+
+					c_color = (int)(255*(ddata[p_parameters.to_size*i+j]-d_min)/(d_max-d_min));
+					c_color = ( c_color > 255 ) ? 255 : ( (c_color < 0) ? 0 : c_color  );
+					c_color = gdImageColorAllocate(im, c_color, c_color, c_color);
+					gdImageSetPixel(im, i, j, c_color );
+
 				}
 			}
 
@@ -161,9 +188,9 @@ namespace sns
 			return im;
 		}
 
-		int convert_cpl_file_to_gif(char* filename_cpl, char* filename_gif, bin2gif_parameters p_parameters)
+		int convert_binary_file_to_gif(char* filename_bin, char* filename_gif, bin2gif_parameters p_parameters)
 		{
-			gdImagePtr im = get_image_from_cpl_file(filename_cpl, p_parameters);
+			gdImagePtr im = get_image_from_binary_file(filename_bin, p_parameters);
 			
 			if ( !im ) {
 				return 1;

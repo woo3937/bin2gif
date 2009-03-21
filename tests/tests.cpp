@@ -10,6 +10,7 @@ void create_file(char* filename, int n)
 	
 	T *data = new T[n*n];
 	
+	#pragma omp parallel for private(j) shared(data)
 	for ( i = 0; i < n; i++ ) {
 		for ( j = 0; j < n; j++ ) {
 			data[i+n*j] = sin(8*M_PI*i/n)*exp((j+sqrt(i))/n);

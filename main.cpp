@@ -19,13 +19,14 @@ void display_help(char *program_name)
 	
     printf("Usage: %s [options] [--] <filename|dirname|pattern>\n", program_name);
 	printf("Utility to convert binary 2D data file into GIF images.\n");
+	printf("Supports 'double' and 'complex<double>' C/C++ data types.\n");
 	printf("Examples:\n");
 	printf("  %s ~/results/today/*.cpl\n", program_name);
-	printf("  %s --type real --max 1 ~/results/today/\n", program_name);
+	printf("  %s --header 8 ~/results/today/ ~/results/tomorrow/file.ext\n", program_name);
 	
 	printf("\nOptions:\n");
-    printf("  --header    number of point per impulse\n");
-	printf("  --footer    number of point per impulse\n");
+    printf("  --header    size of file header in bytes, skipped when reading data and determining type\n");
+	printf("  --footer    size of file footer in bytes, skipped when determining type\n");
     
 	printf("\nAuthor: Oleg Efimov.\n");
 	printf("Report bugs to <efimovov@yandex.ru>.\n");
@@ -37,6 +38,7 @@ void display_version(char *program_name)
 	
 	printf("%s version 1.0\n", program_name);
 	printf("Utility to convert binary 2D data file into GIF images.\n");
+	printf("Supports 'double' and 'complex<double>' C/C++ data types.\n");
 	
 	printf("\nAuthor: Oleg Efimov.\n");
 }
@@ -117,7 +119,7 @@ void process_file(char *filename_bin, bin2gif_parameters p_parameters)
 	
 	printf("File %s:\n", filename_bin);
 	
-	if ( visual::convert_cpl_file_to_gif(filename_bin, filename_gif, p_parameters) == 0 ) {
+	if ( visual::convert_binary_file_to_gif(filename_bin, filename_gif, p_parameters) == 0 ) {
 		printf("  -> %s", filename_gif);
 		printf("\033[70G\033[0;32m[Done]\033[0m\n");
 	} else {
@@ -142,7 +144,7 @@ int main(int argc, char *argv[])
 	p_parameters.header = 0;
 	p_parameters.footer = 0;
 	p_parameters.to_size = 512;
-	p_parameters.to_type = 'n';
+	p_parameters.to_type = 'r';
 	p_parameters.to_amp = -1;
 	
 	get_program_options(argc, argv, &p_parameters);
