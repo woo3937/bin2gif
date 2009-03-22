@@ -15,7 +15,10 @@ using namespace sns;
 //---------------------------------------------------------------------------
 void display_help(char *program_name)
 {
-	program_name = strrchr(program_name, '/') + 1;
+	char* ch = strrchr(program_name, '/');
+	if ( ch != NULL ) {
+		program_name = ch + 1;
+	}
 	
     printf("Usage: %s [options] [--] <filename|dirname|pattern>\n", program_name);
 	printf("Utility to convert binary 2D data file into GIF images.\n");
@@ -34,9 +37,12 @@ void display_help(char *program_name)
 //---------------------------------------------------------------------------
 void display_version(char *program_name)
 {
-	program_name = strrchr(program_name, '/') + 1;
+	char* ch = strrchr(program_name, '/');
+	if ( ch != NULL ) {
+		program_name = ch + 1;
+	}
 	
-	printf("%s version 1.0\n", program_name);
+	printf("%s version 1.1 RC1\n", program_name);
 	printf("Utility to convert binary 2D data file into GIF images.\n");
 	printf("Supports 'double' and 'complex<double>' C/C++ data types.\n");
 	
