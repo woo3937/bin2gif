@@ -1,10 +1,10 @@
 PNAME = bin2gif
-PFILES = main.cpp ./src/util_visualize.cpp ./src/util_fs.cpp
+PFILES = ./src/main.cpp ./src/util_visualize.cpp ./src/util_fs.cpp
 CXX = icpc
 LIBS = -lgd -lm -openmp
 
-HOSTNAME = $(shell hostname)
 
+HOSTNAME = $(shell hostname)
 ifeq ($(HOSTNAME),ktg1.phys.msu.su)
     INSTALL_DIR_HOME = ~/bin
     INSTALL_DIR_USR = /usr/bin
@@ -18,7 +18,6 @@ else
     MSG_COMPILE = Compile on SKIF cluster
     MSG_INSTALL = Install on SKIF cluster
 endif
-
 
 
 all:

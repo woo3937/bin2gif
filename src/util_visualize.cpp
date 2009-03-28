@@ -53,10 +53,10 @@ namespace sns
 			// Determine file type and image size {{{
 			
 			binary_file_type file_type = t_complex_double;
-			off_t file_size = util::file_size(filename) - p_parameters.header - p_parameters.footer, elements_in_file;
+			off_t file_size = util::file_size(filename) - p_parameters.bin_header - p_parameters.bin_footer, elements_in_file;
 			
 			if( file_size <= 0 ) {
-				printf("Error: Cannot determine file size.\n");
+				printf("Cannot determine file size.");
 				return 0;
 			}
 			
@@ -83,19 +83,19 @@ namespace sns
 			}
 			
 			if ( !data ) {
-				printf("Error: Cannot allocate memory for data.");
+				printf("Cannot allocate memory for data.");
 				return 0;
 			}
 
 			fp = fopen(filename, "r");
 			
 			if ( !fp ) {
-				printf("Error: Cannot open input file %s  for reading.", filename);
+				printf("Cannot open input file %s  for reading.", filename);
 				delete[] data;
 				return 0;
 			}
 			
-			fseek(fp, p_parameters.header, SEEK_SET);
+			fseek(fp, p_parameters.bin_header, SEEK_SET);
 			
 			if ( file_type == t_complex_double ) {
 				elements_in_file = fread(data, sizeof(complex<double>), n*n, fp);
@@ -104,7 +104,7 @@ namespace sns
 			}
 			
 			if ( elements_in_file != n*n ) {
-				printf("Error: Bad file format or corrupted file.");
+				printf("Bad file format or corrupted file.");
 				delete[] data;
 				fclose(fp);
 				return 0;
@@ -115,7 +115,7 @@ namespace sns
 			double *ddata = new double[p_parameters.to_size*p_parameters.to_size];
 			
 			if ( !ddata ) {
-				printf("Error: Cannot allocate memory for data.");
+				printf("Cannot allocate memory for data.");
 				delete[] data;
 				return 0;
 			}
@@ -123,7 +123,7 @@ namespace sns
 			im = gdImageCreateTrueColor(p_parameters.to_size, p_parameters.to_size);
 
 			if ( !im ) {
-				printf("Error: Cannot create image.");
+				printf("Cannot create image.");
 				delete[] data;
 				delete[] ddata;
 				return 0;
@@ -199,7 +199,7 @@ namespace sns
 			FILE *fp = fopen(filename_gif, "wb");
 			
 			if ( !fp ) {
-				printf("Error: Cannot open output file %s for writing.", filename_gif);
+				printf("Cannot open output file %s for writing.", filename_gif);
 				gdImageDestroy(im);
 				return 1;
 			}
