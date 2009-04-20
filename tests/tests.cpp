@@ -1,44 +1,47 @@
 #include <complex>
-#include <fstream>
 #include <iostream>
 using namespace std;
 //---------------------------------------------------------------------------
 template<typename T>
-void create_file(char* filename, int n)
+void create_file(char* filename, int w, int h)
 {
 	int i = 0, j = 0;
 	
-	T *data = new T[n*n];
+	T *data = new T[w*h];
 	
-	#pragma omp parallel for private(j) shared(data)
-	for ( i = 0; i < n; i++ ) {
-		for ( j = 0; j < n; j++ ) {
-			data[i+n*j] = sin(8*M_PI*i/n)*exp((j+sqrt(i))/n);
+	#pragma omp parallel for private(i) shared(data)
+	for ( j = 0; j < h; j++ ) {
+		for ( i = 0; i < w; i++ ) {
+			data[j*w+i] = 300*i + j*j;
 		}
 	}
 	
-	ofstream outfile(filename, ios::out | ios::binary);
+	FILE *fp = fopen(filename, "wb");
 	
-	if ( !outfile.is_open() ) {
-		cout << "Test file " << filename << "doesn't created." << endl;
+	if ( !fp ) {
+		printf("Test file %s doesn't created.\n", filename);
 		return;
 	}
 	
-	outfile.write(reinterpret_cast<char *>(data), n*n*sizeof(T));
+	fwrite(data, sizeof(T), w*h, fp);
 	
-	outfile.close();
+	fclose(fp);
 	
 	delete[] data;
 
-	cout << "Test file " << filename << " created." << endl;
+	printf("Test file %s created.\n", filename);
 }
 //---------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-	create_file<double>("./tests/double512.dbl", 512);
-	create_file<double>("./tests/double256.bin", 256);
-	create_file< complex<double> >("./tests/complex512.bin", 512);
-	create_file< complex<double> >("./tests/complex256.cpl", 256);
+	create_file<double>("./tests/double512x512.bin", 512, 512);
+	create_file<double>("./tests/double512x256.bin", 512, 256);
+	create_file<double>("./tests/double1024x1024.bin", 1024, 1024);
+	
+	create_file< complex<double> >("./tests/complex256x512.bin", 256, 512);
+	create_file< complex<double> >("./tests/complex256x256.bin", 256, 256);
+	create_file< complex<double> >("./tests/complex512x512.bin", 512, 512);
+	create_file< complex<double> >("./tests/complex1024x1024.bin", 1024, 1024);
 	
 	return 0;
 }

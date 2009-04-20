@@ -1,6 +1,6 @@
 #ifndef SNS_BIN2GIF_PARAMETERS
 #define SNS_BIN2GIF_PARAMETERS
-
+//---------------------------------------------------------------------------
 namespace sns
 {
     struct bin2gif_parameters {
@@ -8,6 +8,7 @@ namespace sns
 		char** file_patterns;
 		
 		bool verbose;
+		bool debug;
 		
 		int bin_width;
 		int bin_height;
@@ -16,10 +17,14 @@ namespace sns
 		int bin_header;
 		int bin_footer;
 		
-		int to_size;
-		char to_type;
-		int to_amp;
+		int to_width;
+		int to_height;
+		bool to_reflect;
+		bool to_fixphase;
+		
+		char* to_func;
+		double to_amp;
 	};
 }
-
+//---------------------------------------------------------------------------
 #endif

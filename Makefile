@@ -8,26 +8,30 @@ HOSTNAME = $(shell hostname)
 ifeq ($(HOSTNAME),ktg1.phys.msu.su)
     INSTALL_DIR_HOME = ~/bin
     INSTALL_DIR_USR = /usr/bin
-    INCLUDES =
+    INCLUDE_DIRS =
     MSG_COMPILE = Compile on ILC cluster
     MSG_INSTALL = Install on ILC cluster
 else
     INSTALL_DIR_HOME = ~/bin
     INSTALL_DIR_USR = $(INSTALL_DIR_HOME)
-    INCLUDES = -I/home/kosareva/local/include -L/home/kosareva/local/lib
+    INCLUDE_DIRS = -I/home/kosareva/local/include -L/home/kosareva/local/lib
     MSG_COMPILE = Compile on SKIF cluster
     MSG_INSTALL = Install on SKIF cluster
 endif
 
+all: bin2gif
 
-all:
+
+bin2gif: $(PFILES)
 	@echo $(MSG_COMPILE)
-	$(CXX) $(PFILES) -o ./$(PNAME) $(INCLUDES) $(LIBS)
+	$(CXX) $(PFILES) -o ./$(PNAME) $(INCLUDE_DIRS) $(LIBS)
 
-clean:
+clean: clean_bin2gif
+
+clean_bin2gif:
 	rm -f ./$(PNAME)
 
-install:
+install: bin2gif
 	@echo $(MSG_INSTALL)
 	cp ./$(PNAME) $(INSTALL_DIR_HOME)/$(PNAME)
 	cp ./$(PNAME) $(INSTALL_DIR_USR)/$(PNAME)
@@ -36,6 +40,10 @@ uninstall:
 	rm -f $(INSTALL_DIR_HOME)/$(PNAME)
 	rm -f $(INSTALL_DIR_USR)/$(PNAME)
 
-test:
-	$(CXX) ./tests/tests.cpp -o ./tests/make_test_files -lm -openmp
+make_test_files: ./tests/tests.cpp
+	$(CXX) ./tests/tests.cpp -o ./tests/make_test_files -openmp
+
+tests: bin2gif make_test_files
 	@./tests/make_test_files
+	@echo""
+	@./bin2gif ./tests/*.bin

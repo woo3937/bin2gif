@@ -1,3 +1,6 @@
+#ifndef SNS_BIN2GIF_UTIL_VISUALIZE
+#define SNS_BIN2GIF_UTIL_VISUALIZE
+//---------------------------------------------------------------------------
 #include "gd.h"
 //---------------------------------------------------------------------------
 #include "parameters.h"
@@ -10,3 +13,5 @@ namespace sns
 		int convert_binary_file_to_gif(char* filename_bin, char* filename_gif, bin2gif_parameters p_parameters);
     }
 }
+//---------------------------------------------------------------------------
+#endif
