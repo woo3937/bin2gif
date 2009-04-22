@@ -13,7 +13,7 @@
 #include "util_visualize.h"
 using namespace sns;
 //---------------------------------------------------------------------------
-#define VERSION "1.1 RC1"
+#define VERSION "1.1"
 #define AUTHOR "Oleg Efimov"
 #define BUGREPORT_EMAIL "sannis.dev@gmail.com"
 //---------------------------------------------------------------------------

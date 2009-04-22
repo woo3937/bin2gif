@@ -5,7 +5,8 @@ bin2gif
 # Ignore text editors backup files.
 *~
 # Ignore tests binary and results files
-tests/*.bin
-tests/*.dbl
-tests/*.cpl
-tests/*.gif
+make_test_files
+*.bin
+*.dbl
+*.cpl
+*.gif
