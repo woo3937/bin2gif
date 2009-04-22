@@ -175,7 +175,7 @@ namespace sns
 			}
 			
 			if ( elements_in_file != p_parameters.bin_width*p_parameters.bin_height ) {
-				printf("Bad file format or corrupted file, only %ld elements of %ld readed.", elements_in_file, p_parameters.bin_width*p_parameters.bin_height);
+				printf("Bad file format or corrupted file, only %ld elements of %d readed.", elements_in_file, p_parameters.bin_width*p_parameters.bin_height);
 				delete[] data;
 				fclose(fp);
 				return 0;
