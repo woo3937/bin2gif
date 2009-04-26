@@ -3,7 +3,7 @@
 //---------------------------------------------------------------------------
 namespace sns
 {
-    struct bin2gif_parameters {
+	struct bin2gif_parameters {
 		int file_patterns_count;
 		char** file_patterns;
 		

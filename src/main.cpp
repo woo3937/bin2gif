@@ -69,7 +69,7 @@ void display_help(const char *argv0)
 //---------------------------------------------------------------------------
 void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameters)
 {
-    int c = 0;
+	int c = 0;
 	opterr = 0;
 	
 	static struct option long_options[] = {
@@ -93,64 +93,63 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 	int option_index = 0;
 
     
-    while ( (c = getopt_long_only(argc, argv, "s:r:t:f:a:hvd", long_options, &option_index)) != -1 ) {
-        switch(c) {
-            case 0:
-				if(        strcmp(long_options[option_index].name, "reflect") == 0 ) {
-					p_parameters->to_reflect = true;
-				//} else if( strcmp(long_options[option_index].name, "fixphase") == 0 ) {
-				//	p_parameters->to_fixphase = true;
-				} else if( strcmp(long_options[option_index].name, "header") == 0 ) {
-					sscanf(optarg, "%d", &p_parameters->bin_header);
-				} else if( strcmp(long_options[option_index].name, "footer") == 0 ) {
-					sscanf(optarg, "%d", &p_parameters->bin_footer);
-				}
-				break;
+	while ( (c = getopt_long_only(argc, argv, "s:r:t:f:a:hvd", long_options, &option_index)) != -1 ) {
+		switch(c) {
+        	    case 0:
+			if(        strcmp(long_options[option_index].name, "reflect") == 0 ) {
+				p_parameters->to_reflect = true;
+			//} else if( strcmp(long_options[option_index].name, "fixphase") == 0 ) {
+			//	p_parameters->to_fixphase = true;
+			} else if( strcmp(long_options[option_index].name, "header") == 0 ) {
+				sscanf(optarg, "%d", &p_parameters->bin_header);
+			} else if( strcmp(long_options[option_index].name, "footer") == 0 ) {
+				sscanf(optarg, "%d", &p_parameters->bin_footer);
+			}
+			break;
 			
-			case 's':
-				sscanf(optarg, "%d", &p_parameters->bin_width);
-				p_parameters->bin_height = p_parameters->bin_width;
-				break;
-			case 'r':
-				sscanf(optarg, "%d", &p_parameters->to_width);
-				p_parameters->to_height = p_parameters->to_width;
-				break;
-			case 't':
-				p_parameters->bin_type = optarg[0];
-				break;
-			case 'f':
-				p_parameters->to_func = optarg;
-				break;
-			case 'a':
-				sscanf(optarg, "%lf", &p_parameters->to_amp);
-				break;
-			
-			case '?':
-				printf("Unknown option %d.\n", optopt);
-            case 'h':
-                display_help(argv[0]);
-                exit(0);
-            case 'v':
-                display_version(argv[0]);
-                exit(0);
-			case 'd':
-				p_parameters->debug = true;
-				break;
-            default:
-                break;
-        }
-    }
+		    case 's':
+			sscanf(optarg, "%d", &p_parameters->bin_width);
+			p_parameters->bin_height = p_parameters->bin_width;
+			break;
+		    case 'r':
+			sscanf(optarg, "%d", &p_parameters->to_width);
+			p_parameters->to_height = p_parameters->to_width;
+			break;
+		    case 't':
+			p_parameters->bin_type = optarg[0];
+			break;
+		    case 'f':
+			p_parameters->to_func = optarg;
+			break;
+		    case 'a':
+			sscanf(optarg, "%lf", &p_parameters->to_amp);
+			break;
+		    case '?':
+			printf("Unknown option %d.\n", optopt);
+        	    case 'h':
+			display_help(argv[0]);
+			exit(0);
+        	    case 'v':
+			display_version(argv[0]);
+			exit(0);
+		    case 'd':
+			p_parameters->debug = true;
+			break;
+		    default:
+			break;
+		}
+	}
 	
-    if ( optind < argc ) {
-        p_parameters->file_patterns_count = argc - optind;
+	if ( optind < argc ) {
+		p_parameters->file_patterns_count = argc - optind;
 		p_parameters->file_patterns = new char*[p_parameters->file_patterns_count];
 		while ( optind < argc ) {
 			p_parameters->file_patterns[argc-optind-1] = argv[optind];
 			optind++;
 		}
-    } else {
+	} else {
 		display_help(argv[0]);
-        exit(0);
+    		exit(0);
 	}
 }
 //---------------------------------------------------------------------------

@@ -4,14 +4,14 @@
 //---------------------------------------------------------------------------
 namespace sns
 {
-    namespace util
-    {
+	namespace util
+	{
 		bool is_dir(char* filename)
 		{
 			struct stat st;
 		
 			if ( stat(filename, &st) != 0 ) {
-			return false;
+				return false;
 			}
 		
 			return S_ISDIR(st.st_mode);
@@ -22,7 +22,7 @@ namespace sns
 			struct stat st;
 		
 			if ( stat(filename, &st) != 0 ) {
-			return 0;
+				return 0;
 			}
 		
 			return st.st_size;
@@ -34,7 +34,3 @@ namespace sns
 		}
     }
 }
-
-
-
-

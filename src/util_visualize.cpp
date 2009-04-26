@@ -13,8 +13,8 @@ using namespace std;
 //---------------------------------------------------------------------------
 namespace sns
 {
-    namespace visual
-    {
+	namespace visual
+	{
 		/**
 		* Returns real part of complex number
 		* @param complex<double> Complex number
@@ -340,5 +340,5 @@ namespace sns
 			
 			return 0;
 		}
-    }
+	}
 }
