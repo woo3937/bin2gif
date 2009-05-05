@@ -1,0 +1,13 @@
+== bin2gif -- utility to convert binary 2D data file into GIF images.
+ 
+It supports 'double' and 'complex<double>' C++ data types and can resize productioned image.
+ 
+== License
+ 
+MIT License.
+See license in file LICENSE.
+ 
+== Copyright
+ 
+Oleg Efimov
+http://sannis.ru
