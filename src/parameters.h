@@ -7,7 +7,8 @@ namespace sns
 		int file_patterns_count;
 		char** file_patterns;
 		
-		bool verbose;
+		bool delete_original;
+		
 		bool debug;
 		
 		int bin_width;

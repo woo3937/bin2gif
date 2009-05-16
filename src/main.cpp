@@ -34,6 +34,7 @@ void display_version(const char *argv0)
 	printf("Supports 'double' and 'complex<double>' C/C++ data types.\n");
 	
 	printf("\nAuthor: %s.\n", AUTHOR);
+	printf("Report bugs to <%s>.\n", BUGREPORT_EMAIL);
 }
 //---------------------------------------------------------------------------
 void display_help(const char *argv0)
@@ -54,8 +55,8 @@ void display_help(const char *argv0)
 	//printf("	--fixphase					fix 2π jumps in calculated complex arguments \n");
 	printf("	--header <num>					size of file header in bytes\n");
 	printf("	--footer <num>					size of file footer in bytes\n");
-	printf("	--verbose					do verbose output\n");
-	printf("	-d						do debug output\n");
+	printf("	--delete-original				delete original file after convert\n");
+	printf("	--debug						do debug output\n");
 	printf("	-v, --version					display program vesion\n");
 	printf("	-h, --help					display this help page\n");
     
@@ -82,17 +83,17 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 		{"reflect", no_argument, NULL, 0},
 		//{"fixphase", no_argument, NULL, 0},
 		
-		
 		{"header", required_argument, NULL, 0},
 		{"footer", required_argument, NULL, 0},
 		
-		{"verbose", no_argument, NULL, 0},
+		{"delete-original", no_argument, NULL, 0},
+		
+		{"debug", no_argument, NULL, 0},
 		{"version", no_argument, NULL, 'v'},
 		{"help", no_argument, NULL, 'h'}
 	};
 	int option_index = 0;
 
-    
 	while ( (c = getopt_long_only(argc, argv, "s:r:t:f:a:hvd", long_options, &option_index)) != -1 ) {
 		switch(c) {
         	    case 0:
@@ -100,6 +101,10 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 				p_parameters->to_reflect = true;
 			//} else if( strcmp(long_options[option_index].name, "fixphase") == 0 ) {
 			//	p_parameters->to_fixphase = true;
+			} else if( strcmp(long_options[option_index].name, "delete-original") == 0 ) {
+				p_parameters->delete_original = true;
+			} else if( strcmp(long_options[option_index].name, "debug") == 0 ) {
+				p_parameters->debug = true;
 			} else if( strcmp(long_options[option_index].name, "header") == 0 ) {
 				sscanf(optarg, "%d", &p_parameters->bin_header);
 			} else if( strcmp(long_options[option_index].name, "footer") == 0 ) {
@@ -132,9 +137,6 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
         	    case 'v':
 			display_version(argv[0]);
 			exit(0);
-		    case 'd':
-			p_parameters->debug = true;
-			break;
 		    default:
 			break;
 		}
@@ -178,6 +180,13 @@ void process_file(char *filename_bin, bin2gif_parameters p_parameters)
 	if ( visual::convert_binary_file_to_gif(filename_bin, filename_gif, p_parameters) == 0 ) {
 		printf("  -> %s", filename_gif);
 		printf("\033[70G\033[0;32m[Done]\033[0m\n");
+		
+		if ( p_parameters.delete_original ) {
+			char* rm_cmd = new char[1024];
+			sprintf(rm_cmd, "rm -f %s", filename_bin);
+			system(rm_cmd);
+		}
+		
 	} else {
 		printf("\033[70G\033[0;31m[Failed]\033[0m\n");
 	}
@@ -200,7 +209,8 @@ int main(int argc, char *argv[])
 	
 	p_parameters.file_patterns_count = 0;
 	
-	p_parameters.verbose = false;
+	p_parameters.delete_original = false;
+	
 	p_parameters.debug = false;
 	
 	p_parameters.bin_width = -1;  // Autodetect
