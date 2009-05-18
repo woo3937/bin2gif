@@ -10,6 +10,7 @@ namespace sns
 		bool delete_original;
 		
 		bool debug;
+		bool verbose;
 		
 		int bin_width;
 		int bin_height;

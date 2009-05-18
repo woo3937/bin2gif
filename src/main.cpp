@@ -57,6 +57,7 @@ void display_help(const char *argv0)
 	printf("	--footer <num>					size of file footer in bytes\n");
 	printf("	--delete-original				delete original file after convert\n");
 	printf("	--debug						do debug output\n");
+	printf("	--verbose					verbosely output\n");
 	printf("	-v, --version					display program vesion\n");
 	printf("	-h, --help					display this help page\n");
     
@@ -89,6 +90,7 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 		{"delete-original", no_argument, NULL, 0},
 		
 		{"debug", no_argument, NULL, 0},
+		{"verbose", no_argument, NULL, 0},
 		{"version", no_argument, NULL, 'v'},
 		{"help", no_argument, NULL, 'h'}
 	};
@@ -105,6 +107,8 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 				p_parameters->delete_original = true;
 			} else if( strcmp(long_options[option_index].name, "debug") == 0 ) {
 				p_parameters->debug = true;
+			} else if( strcmp(long_options[option_index].name, "verbose") == 0 ) {
+				p_parameters->verbose = true;
 			} else if( strcmp(long_options[option_index].name, "header") == 0 ) {
 				sscanf(optarg, "%d", &p_parameters->bin_header);
 			} else if( strcmp(long_options[option_index].name, "footer") == 0 ) {
@@ -158,10 +162,14 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 void process_file(char *filename_bin, bin2gif_parameters p_parameters)
 {
 	if ( util::is_dir(filename_bin) ) {
-		printf("Directory %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin);
+		if ( p_parameters.verbose ) {
+			printf("Directory %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin);
+		}
 		return;
 	} else if ( strstr(filename_bin, ".gif") != NULL ) {
-		printf("File %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin);
+		if ( p_parameters.verbose ) {
+			printf("File %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin);
+		}
 		return;
 	}
 	char filename_gif[1024];
@@ -213,7 +221,10 @@ int main(int argc, char *argv[])
 	
 	p_parameters.delete_original = false;
 	
+	// No print debug output by default
 	p_parameters.debug = false;
+	// No show verbosely output
+	p_parameters.verbose = false;
 	
 	p_parameters.bin_width = -1;  // Autodetect
 	p_parameters.bin_height = -1; // Autodetect
