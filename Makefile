@@ -1,7 +1,8 @@
-PNAME = bin2gif
 PFILES = ./src/main.cpp ./src/util_visualize.cpp ./src/util_fs.cpp
 CXX = icpc
-LIBS = -lgd -lm -openmp
+CFLAGS = -openmp
+LIBS = -lgd -lm
+LIBS_STATIC = -lm -openmp-link=static
 
 
 HOSTNAME = $(shell hostname)
@@ -9,26 +10,27 @@ ifeq ($(HOSTNAME),ktg1.phys.msu.su)
     INSTALL_DIR_HOME = ~/bin
     INSTALL_DIR_USR = /usr/bin
     INCLUDE_DIRS =
+    LIBS_STATIC += /usr/lib/libgd.a
     MSG_COMPILE = Compile on ILC cluster
     MSG_INSTALL = Install on ILC cluster
 else
     INSTALL_DIR_HOME = ~/bin
     INSTALL_DIR_USR = $(INSTALL_DIR_HOME)
     INCLUDE_DIRS = -I/home/kosareva/local/include -L/home/kosareva/local/lib
+    LIBS_STATIC += /home/kosareva/local/lib/libgd.a
     MSG_COMPILE = Compile on SKIF cluster
     MSG_INSTALL = Install on SKIF cluster
 endif
 
-all: bin2gif
-
-
-bin2gif: $(PFILES)
+all: $(PFILES)
 	@echo $(MSG_COMPILE)
-	$(CXX) $(PFILES) -o ./$(PNAME) $(INCLUDE_DIRS) $(LIBS)
+	$(CXX) $(PFILES) -o ./bin2gif $(INCLUDE_DIRS) $(LIBS) $(CFLAGS)
 
-clean: clean_bin2gif
+static: $(PFILES)
+	@echo $(MSG_COMPILE)
+	$(CXX) $(PFILES) -o ./bin2gif-static $(INCLUDE_DIRS) $(LIBS_DIRS) $(LIBS_STATIC) $(CFLAGS)
 
-clean_bin2gif:
+clean:
 	rm -f ./$(PNAME)
 
 install: bin2gif

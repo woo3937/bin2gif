@@ -1,5 +1,6 @@
 # Ignore executable file.
 bin2gif
+bin2gif-static
 # Ignore objects and archives.
 *.[oa]
 # Ignore text editors backup files.
