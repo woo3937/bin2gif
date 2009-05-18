@@ -158,10 +158,10 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 void process_file(char *filename_bin, bin2gif_parameters p_parameters)
 {
 	if ( util::is_dir(filename_bin) ) {
-		printf("Directory %s: \033[70G\033[1;33m[Skipped]\033[0m\n", filename_bin);
+		printf("Directory %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin);
 		return;
 	} else if ( strstr(filename_bin, ".gif") != NULL ) {
-		printf("File %s: \033[70G\033[1;33m[Skipped]\033[0m\n", filename_bin);
+		printf("File %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin);
 		return;
 	}
 	char filename_gif[1024];
@@ -177,9 +177,11 @@ void process_file(char *filename_bin, bin2gif_parameters p_parameters)
 	
 	printf("File %s:\n", filename_bin);
 	
-	if ( visual::convert_binary_file_to_gif(filename_bin, filename_gif, p_parameters) == 0 ) {
+	if ( util::file_exists(filename_gif) ) {
+		printf("\033[90G\033[0;33m[GIF file already exists]\033[0m\n");
+	} else if ( visual::convert_binary_file_to_gif(filename_bin, filename_gif, p_parameters) == 0 ) {
 		printf("  -> %s", filename_gif);
-		printf("\033[70G\033[0;32m[Done]\033[0m\n");
+		printf("\033[90G\033[0;32m[Done]\033[0m\n");
 		
 		if ( p_parameters.delete_original ) {
 			char* rm_cmd = new char[1024];
@@ -188,7 +190,7 @@ void process_file(char *filename_bin, bin2gif_parameters p_parameters)
 		}
 		
 	} else {
-		printf("\033[70G\033[0;31m[Failed]\033[0m\n");
+		printf("\033[90G\033[0;31m[Failed]\033[0m\n");
 	}
 }
 //---------------------------------------------------------------------------

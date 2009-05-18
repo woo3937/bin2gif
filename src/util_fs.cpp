@@ -6,6 +6,17 @@ namespace sns
 {
 	namespace util
 	{
+		bool file_exists(char* filename)
+		{
+			struct stat st;
+			
+			if ( stat(filename, &st) != 0 ) {
+				return false;
+			}
+			
+			return true;
+		}
+		
 		bool is_dir(char* filename)
 		{
 			struct stat st;
