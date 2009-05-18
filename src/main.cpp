@@ -228,7 +228,22 @@ int main(int argc, char *argv[])
 	p_parameters.to_func = "real";
 	p_parameters.to_amp = -1;
 	
+	// Parse program command line options
 	get_program_options(argc, argv, &p_parameters);
+	
+	// Confirm originals deletion
+	if ( p_parameters.delete_original ) {
+		printf("Are you sure to delete original binary files after convertion[y/N]: ");
+		char deletion_confirm[256] = {'\0'};
+		scanf("%s", deletion_confirm);
+		if ( deletion_confirm[0] == 'y' || deletion_confirm[0] == 'Y' ) {
+			p_parameters.delete_original = true;
+			printf(" => Yes\n");
+		} else {
+			p_parameters.delete_original = false;
+			printf(" => No\n");
+		}
+	}
 	
 	// Debug {{{
 	if ( p_parameters.debug ) {
