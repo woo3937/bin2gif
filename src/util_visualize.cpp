@@ -119,7 +119,7 @@ namespace sns
 			// Debug {{{
 			if ( p_parameters.debug ) {
 			
-				printf("\033[0;33mDebug {{{\n");
+				//printf("\033[0;33mDebug {{{\n");
 				
 				printf("bin_width: %d\n", p_parameters.bin_width);
 				printf("bin_height: %d\n", p_parameters.bin_height);
@@ -140,7 +140,7 @@ namespace sns
 					printf("func: %s\n", p_parameters.to_func);
 				}
 				
-				printf("Debug }}}\033[0m\n");
+				//printf("Debug }}}\033[0m\n");
 				
 			}
 			// Debug }}}
@@ -265,12 +265,12 @@ namespace sns
 				    d_min = *min_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
 				    d_max = *max_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
 				    
-				    printf("\033[0;33mDebug {{{\n");
+				    //printf("\033[0;33mDebug {{{\n");
 				
 				    printf("d_min: %lf\n", d_min);
 				    printf("d_max: %lf\n", d_max);
 				
-				    printf("Debug }}}\033[0m\n");
+				    //printf("Debug }}}\033[0m\n");
 				}
 				
 				d_min = -M_PI;
@@ -286,12 +286,12 @@ namespace sns
 			// Debug {{{
 			if ( p_parameters.debug ) {
 			
-				printf("\033[0;33mDebug {{{\n");
+				//printf("\033[0;33mDebug {{{\n");
 				
 				printf("d_min: %lf\n", d_min);
 				printf("d_max: %lf\n", d_max);
 				
-				printf("Debug }}}\033[0m\n");
+				//printf("Debug }}}\033[0m\n");
 
 			}
 			// Debug }}}

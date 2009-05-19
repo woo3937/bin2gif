@@ -11,3 +11,9 @@ make_test_files
 *.dbl
 *.cpl
 *.gif
+# Ignore PBS and CLEO log files
+machinefile*
+*.out-*
+*.rep-*
+.cleo-*
+*panfs*

@@ -33,6 +33,11 @@ static: $(PFILES)
 clean:
 	rm -f ./$(PNAME)
 
+clean-pbs:
+		rm -f ./*.rep-*
+		rm -f ./*.out-*
+		rm -f ./machinefile-*
+
 install: bin2gif
 	@echo $(MSG_INSTALL)
 	cp ./$(PNAME) $(INSTALL_DIR_HOME)/$(PNAME)
