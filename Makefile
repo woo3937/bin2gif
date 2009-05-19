@@ -37,6 +37,8 @@ clean-pbs:
 		rm -f ./*.rep-*
 		rm -f ./*.out-*
 		rm -f ./machinefile-*
+		rm -f ./.cleo-*
+		rm -f ./.panfs.*
 
 install: bin2gif
 	@echo $(MSG_INSTALL)
