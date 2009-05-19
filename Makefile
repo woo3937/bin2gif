@@ -22,7 +22,9 @@ else
     MSG_INSTALL = Install on SKIF cluster
 endif
 
-all: $(PFILES)
+all: bin2gif
+
+bin2gif: $(PFILES)
 	@echo $(MSG_COMPILE)
 	$(CXX) $(PFILES) -o ./bin2gif $(INCLUDE_DIRS) $(LIBS) $(CFLAGS)
 
@@ -31,28 +33,29 @@ static: $(PFILES)
 	$(CXX) $(PFILES) -o ./bin2gif-static $(INCLUDE_DIRS) $(LIBS_DIRS) $(LIBS_STATIC) $(CFLAGS)
 
 clean:
-	rm -f ./$(PNAME)
+	rm -f ./bin2gif
+	rm -f ./*.o
 
 clean-pbs:
-		rm -f ./*.rep-*
-		rm -f ./*.out-*
-		rm -f ./machinefile-*
-		rm -f ./.cleo-*
-		rm -f ./.panfs.*
+	rm -f ./*.rep-*
+	rm -f ./*.out-*
+	rm -f ./machinefile-*
+	rm -f ./.cleo-*
+	rm -f ./.panfs.*
 
 install: bin2gif
 	@echo $(MSG_INSTALL)
-	cp ./$(PNAME) $(INSTALL_DIR_HOME)/$(PNAME)
-	cp ./$(PNAME) $(INSTALL_DIR_USR)/$(PNAME)
+	cp ./bin2gif $(INSTALL_DIR_HOME)/
+	cp ./bin2gif $(INSTALL_DIR_USR)/
 
 uninstall:
-	rm -f $(INSTALL_DIR_HOME)/$(PNAME)
-	rm -f $(INSTALL_DIR_USR)/$(PNAME)
+	rm -f $(INSTALL_DIR_HOME)/bin2gif
+	rm -f $(INSTALL_DIR_USR)/bin2gif
 
 make_test_files: ./tests/tests.cpp
 	$(CXX) ./tests/tests.cpp -o ./tests/make_test_files -openmp
 
 tests: bin2gif make_test_files
 	@./tests/make_test_files
-	@echo""
+	@echo ""
 	@./bin2gif ./tests/*.bin
