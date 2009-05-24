@@ -34,6 +34,7 @@ static: $(PFILES)
 
 clean:
 	rm -f ./bin2gif
+	rm -f ./bin2gif-static
 	rm -f ./*.o
 
 clean-pbs:
