@@ -2,12 +2,6 @@
 * @file util_visualize.cpp
 */
 //---------------------------------------------------------------------------
-#include <cstdio>
-#include <cstdlib>
-#include <complex>
-#include <algorithm>
-using namespace std;
-//---------------------------------------------------------------------------
 #include "util_visualize.h"
 #include "util_fs.h"
 //---------------------------------------------------------------------------

@@ -1,6 +1,12 @@
 #ifndef SNS_BIN2GIF_UTIL_VISUALIZE
 #define SNS_BIN2GIF_UTIL_VISUALIZE
 //---------------------------------------------------------------------------
+#include <complex>
+#include <cstring>
+#include <cstdlib>
+#include <algorithm>
+using namespace std;
+//---------------------------------------------------------------------------
 #include "gd.h"
 //---------------------------------------------------------------------------
 #include "parameters.h"
