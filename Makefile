@@ -2,6 +2,10 @@ PFILES = ./src/main.cpp ./src/util_visualize.cpp ./src/util_fs.cpp
 CXX = icpc
 CFLAGS = -openmp
 LIBS = -lgd -lm
+
+# For warning with feupdateenv in libimf.so
+LIBS += -shared-intel
+
 LIBS_STATIC = -lm -openmp-link=static
 
 INSTALL_DIR_HOME = ~/bin
@@ -17,8 +21,8 @@ else
 		LIBS_STATIC += /usr/lib/libgd.a
 	else
 		HOSTTITLE = SKIF MSU cluster
-		INCLUDE_DIRS = -I/home/kosareva/local/include -L/home/kosareva/local/lib
-		LIBS_STATIC += /home/kosareva/local/lib/libgd.a
+		INCLUDE_DIRS = -I/home/$(USER)/local/include -L/home/$(USER)/local/lib
+		LIBS_STATIC += /home/$(USER)/local/lib/libgd.a
 	endif
 endif
 
