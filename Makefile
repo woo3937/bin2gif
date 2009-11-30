@@ -32,7 +32,7 @@ MSG_COMPILE = Compile on $(HOSTTITLE), $(USER)@$(HOSTNAME)
 MSG_INSTALL = Install on $(HOSTTITLE), $(USER)@$(HOSTNAME)
 
 
-all: bin2gif bin2gif-static
+all: bin2gif
 
 bin2gif: $(PFILES)
 	@echo $(MSG_COMPILE)
