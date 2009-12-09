@@ -7,6 +7,8 @@ namespace sns
 		int file_patterns_count;
 		char** file_patterns;
 		
+		char* palette_file;
+		
 		bool delete_original;
 		
 		bool debug;
@@ -30,3 +32,4 @@ namespace sns
 }
 //---------------------------------------------------------------------------
 #endif
+

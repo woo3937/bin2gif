@@ -1,4 +1,3 @@
-PFILES = ./src/main.cpp ./src/util_visualize.cpp ./src/util_fs.cpp
 CXX = icpc
 CFLAGS = -openmp
 LIBS = -lgd -lm
@@ -34,13 +33,22 @@ MSG_INSTALL = Install on $(HOSTTITLE), $(USER)@$(HOSTNAME)
 
 all: bin2gif
 
-bin2gif: $(PFILES)
+bin2gif: compile-main compile-util_visualize compile-util_fs
 	@echo $(MSG_COMPILE)
-	$(CXX) $(PFILES) -o ./bin2gif $(INCLUDE_DIRS) $(LIBS) $(CFLAGS)
+	$(CXX) ./*.o -o ./bin2gif $(INCLUDE_DIRS) $(LIBS) $(CFLAGS)
 
-bin2gif-static: $(PFILES)
+bin2gif-static: compile-main compile-util_visualize compile-util_fs
 	@echo $(MSG_COMPILE)
-	$(CXX) $(PFILES) -o ./bin2gif-static $(INCLUDE_DIRS) $(LIBS_DIRS) $(LIBS_STATIC) $(CFLAGS)
+	$(CXX) ./*.o -o ./bin2gif-static $(INCLUDE_DIRS) $(LIBS_DIRS) $(LIBS_STATIC) $(CFLAGS)
+
+compile-main: ./src/main.cpp ./src/parameters.h
+	$(CXX) -c ./src/main.cpp -o ./main.o $(INCLUDE_DIRS) $(CFLAGS)
+
+compile-util_visualize: ./src/util_visualize.cpp
+	$(CXX) -c ./src/util_visualize.cpp -o ./util_visualize.o $(INCLUDE_DIRS) $(CFLAGS)
+
+compile-util_fs: ./src/util_fs.cpp
+	$(CXX) -c ./src/util_fs.cpp -o ./util_fs.o $(INCLUDE_DIRS) $(CFLAGS)
 
 clean:
 	rm -f ./bin2gif

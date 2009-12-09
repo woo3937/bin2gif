@@ -1,10 +1,12 @@
-#include <sys/stat.h>
+/**
+* @file util_fs.cpp
+*/
 //---------------------------------------------------------------------------
 #include "util_fs.h"
 //---------------------------------------------------------------------------
 namespace sns
 {
-	namespace util
+	namespace fs
 	{
 		bool file_exists(char* filename)
 		{
@@ -45,3 +47,4 @@ namespace sns
 		}
     }
 }
+

@@ -36,7 +36,32 @@ namespace sns
 			t_double,         /// Double binary data
 			t_complex_double  /// Complex<double> binary data
 		};
-	
+		
+		/**
+		* Array with palette colors
+		*/
+		int palette[256][3];
+		
+		/**
+		* Initialize library color palette from file
+		* @return void
+		*/
+		void init_color_palette(char* filename)
+		{
+			int i;
+			
+			if(filename) {
+				// TODO: Write this.
+			} else {
+				for( i = 0; i < 256; i++ )
+				{
+					palette[i][0] = i;
+					palette[i][1] = i;
+					palette[i][2] = i;
+				}
+			}
+		}
+		
 		/**
 		*
 		* @return gdImagePtr Image (GD class)
@@ -69,7 +94,7 @@ namespace sns
 			// Determine file type and image size {{{
 			if ( p_parameters.bin_width == -1 || p_parameters.bin_height == -1 ) {
 				
-				file_size = util::file_size(filename) - p_parameters.bin_header - p_parameters.bin_footer;
+				file_size = fs::file_size(filename) - p_parameters.bin_header - p_parameters.bin_footer;
 				
 				if( file_size <= 0 ) {
 					printf("Cannot determine file size.");
@@ -295,7 +320,8 @@ namespace sns
 
 					c_color = static_cast<int>(255*(ddata[p_parameters.to_width*j+i]-d_min)/(d_max-d_min));
 					c_color = ( c_color > 255 ) ? 255 : ( (c_color < 0) ? 0 : c_color );
-					c_color = gdImageColorAllocate(im, c_color, c_color, c_color);
+					c_color = gdImageColorAllocate(im, palette[c_color][0], palette[c_color][1], palette[c_color][2]);
+					
 					if ( !p_parameters.to_reflect ) {
 						gdImageSetPixel(im, i, j, c_color );
 					} else {
@@ -336,3 +362,4 @@ namespace sns
 		}
 	}
 }
+

@@ -13,9 +13,9 @@
 #include "util_visualize.h"
 using namespace sns;
 //---------------------------------------------------------------------------
-#define VERSION "1.1"
+#define VERSION "0.3.1beta1"
 #define AUTHOR "Oleg Efimov"
-#define BUGREPORT_EMAIL "sannis.dev@gmail.com"
+#define BUGREPORT_EMAIL "efimovov@gmail.com"
 //---------------------------------------------------------------------------
 const char* get_program_name(const char *argv0)
 {
@@ -52,12 +52,15 @@ void display_help(const char *argv0)
 	printf("	-f, --func (abs|norm|real|imag|arg)		function for complex to real conversion\n");
 	printf("	-a, --amp <double>				value of image color scale maximum\n");
 	printf("	--reflect					reflect image, swaps x and y coords\n");
+	printf("	--palette <filename>				color palette filename\n\n");
+	
 	//printf("	--fixphase					fix 2π jumps in calculated complex arguments \n");
+	
 	printf("	--header <num>					size of file header in bytes\n");
 	printf("	--footer <num>					size of file footer in bytes\n");
 	printf("	--delete-original				delete original file after convert\n");
 	printf("	--debug						do debug output\n");
-	printf("	--verbose					verbosely output\n");
+	printf("	--verbose					verbosely output\n\n");
 	printf("	-v, --version					display program vesion\n");
 	printf("	-h, --help					display this help page\n");
     
@@ -80,8 +83,9 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 		{"type", required_argument, NULL, 't'},
 		{"func", required_argument, NULL, 'f'},
 		{"amp", required_argument, NULL, 'a'},
-		
 		{"reflect", no_argument, NULL, 0},
+		{"palette", no_argument, NULL, 0},
+		
 		//{"fixphase", no_argument, NULL, 0},
 		
 		{"header", required_argument, NULL, 0},
@@ -101,6 +105,8 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
         	    case 0:
 			if(        strcmp(long_options[option_index].name, "reflect") == 0 ) {
 				p_parameters->to_reflect = true;
+			} else if( strcmp(long_options[option_index].name, "palette") == 0 ) {
+				p_parameters->palette_file = optarg;
 			//} else if( strcmp(long_options[option_index].name, "fixphase") == 0 ) {
 			//	p_parameters->to_fixphase = true;
 			} else if( strcmp(long_options[option_index].name, "delete-original") == 0 ) {
@@ -161,7 +167,7 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 //---------------------------------------------------------------------------
 void process_file(char *filename_bin, bin2gif_parameters p_parameters)
 {
-	if ( util::is_dir(filename_bin) ) {
+	if ( fs::is_dir(filename_bin) ) {
 		if ( p_parameters.verbose ) {
 			//printf("Directory %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin);
 		}
@@ -185,7 +191,7 @@ void process_file(char *filename_bin, bin2gif_parameters p_parameters)
 	
 	printf("File %s:\n", filename_bin);
 	
-	if ( util::file_exists(filename_gif) ) {
+	if ( fs::file_exists(filename_gif) ) {
 		//printf("\033[90G\033[0;33m[GIF file already exists]\033[0m\n");
 	} else if ( visual::convert_binary_file_to_gif(filename_bin, filename_gif, p_parameters) == 0 ) {
 		printf("  -> %s\n", filename_gif);
@@ -241,6 +247,8 @@ int main(int argc, char *argv[])
 	p_parameters.to_func = "real";
 	p_parameters.to_amp = -1;
 	
+	p_parameters.palette_file = 0;
+	
 	// Parse program command line options
 	get_program_options(argc, argv, &p_parameters);
 	
@@ -257,6 +265,9 @@ int main(int argc, char *argv[])
 			printf(" => No\n");
 		}
 	}
+	
+	// Init color palette
+	visual::init_color_palette(p_parameters.palette_file);
 
 	// Debug {{{
 	if ( p_parameters.debug ) {
@@ -290,7 +301,7 @@ int main(int argc, char *argv[])
 		
 		for ( j = 0; j < globbuf.gl_pathc; j++ ) {
 			
-			if ( util::is_dir(globbuf.gl_pathv[j]) ) { // Directory
+			if ( fs::is_dir(globbuf.gl_pathv[j]) ) { // Directory
 			
 				dirent *de;
 				DIR *dp;
