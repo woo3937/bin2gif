@@ -4,8 +4,6 @@
 //---------------------------------------------------------------------------
 #include "util_visualize.h"
 #include "util_fs.h"
-#include <iostream>
-using namespace std;
 //---------------------------------------------------------------------------
 namespace sns
 {
