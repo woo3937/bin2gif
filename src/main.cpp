@@ -95,6 +95,7 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 		
 		{"debug", no_argument, NULL, 0},
 		{"verbose", no_argument, NULL, 0},
+		{"force", no_argument, NULL, 0},
 		{"version", no_argument, NULL, 'v'},
 		{"help", no_argument, NULL, 'h'}
 	};
@@ -115,6 +116,8 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 				p_parameters->debug = true;
 			} else if( strcmp(long_options[option_index].name, "verbose") == 0 ) {
 				p_parameters->verbose = true;
+			} else if( strcmp(long_options[option_index].name, "force") == 0 ) {
+				p_parameters->force = true;
 			} else if( strcmp(long_options[option_index].name, "header") == 0 ) {
 				sscanf(optarg, "%d", &p_parameters->bin_header);
 			} else if( strcmp(long_options[option_index].name, "footer") == 0 ) {
@@ -191,7 +194,7 @@ void process_file(char *filename_bin, bin2gif_parameters p_parameters)
 	
 	printf("File %s:\n", filename_bin);
 	
-	if ( fs::file_exists(filename_gif) ) {
+	if ( fs::file_exists(filename_gif) && !p_parameters.force ) {
 		//printf("\033[90G\033[0;33m[GIF file already exists]\033[0m\n");
 	} else if ( visual::convert_binary_file_to_gif(filename_bin, filename_gif, p_parameters) == 0 ) {
 		printf("  -> %s\n", filename_gif);
@@ -231,6 +234,8 @@ int main(int argc, char *argv[])
 	p_parameters.debug = false;
 	// No show verbosely output
 	p_parameters.verbose = false;
+	// Don't rewrite existing gif's
+	p_parameters.force = false;
 	
 	p_parameters.bin_width = -1;  // Autodetect
 	p_parameters.bin_height = -1; // Autodetect

@@ -13,6 +13,7 @@ namespace sns
 		
 		bool debug;
 		bool verbose;
+		bool force;
 		
 		int bin_width;
 		int bin_height;
