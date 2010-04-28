@@ -84,7 +84,7 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 		{"func", required_argument, NULL, 'f'},
 		{"amp", required_argument, NULL, 'a'},
 		{"reflect", no_argument, NULL, 0},
-		{"palette", no_argument, NULL, 0},
+		{"palette", required_argument, NULL, 0},
 		
 		//{"fixphase", no_argument, NULL, 0},
 		

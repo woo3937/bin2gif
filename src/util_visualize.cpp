@@ -4,6 +4,8 @@
 //---------------------------------------------------------------------------
 #include "util_visualize.h"
 #include "util_fs.h"
+#include <iostream>
+using namespace std;
 //---------------------------------------------------------------------------
 namespace sns
 {
@@ -43,6 +45,29 @@ namespace sns
 		int palette[256][3];
 		
 		/**
+		* Struct for palette point, readed from file
+		*/
+		struct palette_point {
+			int i; // point index
+			
+			int r; // red channel
+			int g; // green channel
+			int b; // blue channel
+		};
+		
+		/**
+		* Comparison function for palette points
+		*/
+		bool compare_palette_points(palette_point a, palette_point b)
+		{
+			if( a.i < b.i ) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		/**
 		* Initialize library color palette from file
 		* @return void
 		*/
@@ -50,15 +75,67 @@ namespace sns
 		{
 			int i;
 			
-			if(filename) {
-				// TODO: Write this.
-			} else {
-				for( i = 0; i < 256; i++ )
+			palette_point pp;
+			list<palette_point> plist;
+			list<palette_point>::iterator it, it_min, it_max;
+			int min, max;
+			palette_point p1, p2;
+
+			// Read palette from file
+			if(filename){
+				FILE *fp = fopen(filename, "r");
+				
+				while( fscanf(fp, "%d %d %d %d", &pp.i, &pp.r, &pp.g, &pp.b) == 4 )
 				{
-					palette[i][0] = i;
-					palette[i][1] = i;
-					palette[i][2] = i;
+					plist.push_back(pp);
 				}
+
+				// Generate palette from points
+				if(plist.size() >= 2) {
+					// Sort point from file, for newbies
+					plist.sort(compare_palette_points);
+
+					// Scale indexes for 0..255
+					it_min = min_element(plist.begin(), plist.end(), compare_palette_points);
+					it_max = max_element(plist.begin(), plist.end(), compare_palette_points);
+					min = (*it_min).i;
+					max = (*it_max).i;
+				
+					for( it = plist.begin(); it != plist.end(); ++it)
+					{
+						(*it).i = ((*it).i - min)*255/(max-min);
+					}
+					
+					// Set palette colors
+					it = plist.begin();
+					p1 = *it;
+					++it;
+					p2 = *it;
+					for( i = 0; i < 256; i++ )
+					{
+						if( i > p2.i ) {
+							p1 = p2;
+							++it;
+							p2 = *it;
+						}
+						
+						palette[i][0] = ((i - p1.i)*p2.r + (p2.i - i)*p1.r)/(p2.i-p1.i);
+						palette[i][1] = ((i - p1.i)*p2.g + (p2.i - i)*p1.g)/(p2.i-p1.i);
+						palette[i][2] = ((i - p1.i)*p2.b + (p2.i - i)*p1.b)/(p2.i-p1.i);
+					}
+					
+					// All OK, return
+					return;
+				}
+			}
+			
+			// OTHERWISE
+			// Generate simple grayscale palette
+			for( i = 0; i < 256; i++ )
+			{
+				palette[i][0] = i;
+				palette[i][1] = i;
+				palette[i][2] = i;
 			}
 		}
 		
