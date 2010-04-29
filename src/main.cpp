@@ -60,6 +60,7 @@ void display_help(const char *argv0)
 	printf("	--footer <num>					size of file footer in bytes\n");
 	printf("	--delete-original				delete original file after convert\n");
 	printf("	--debug						do debug output\n");
+	printf("	--force						force rewrite existing GIF files\n");
 	printf("	--verbose					verbosely output\n\n");
 	printf("	-v, --version					display program vesion\n");
 	printf("	-h, --help					display this help page\n");
