@@ -348,17 +348,16 @@ namespace sns
 				}
 			}*/
 
-			int c_black = gdImageColorAllocate(im, 0, 0, 0);
-			int c_white = gdImageColorAllocate(im, 255, 255, 255);
 			int c_color;
 
 			double d_max, d_min;
 			
+		    d_min = *min_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
+		    d_max = *max_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
+			
 			if ( strcmp(p_parameters.to_func, "arg") == 0 ) {
 				if ( p_parameters.debug ) {
-				    d_min = *min_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
-				    d_max = *max_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
-				    
+
 				    //printf("\033[0;33mDebug {{{\n");
 				
 				    printf("d_min: %lf\n", d_min);
@@ -369,12 +368,17 @@ namespace sns
 				
 				d_min = -M_PI;
 				d_max = M_PI;
-			} else if ( p_parameters.to_amp < 0 ) {
-				d_min = *min_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
-				d_max = *max_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
-			} else {
+			} else if ( ( p_parameters.to_amp > 0 ) && !(p_parameters.to_use_min || p_parameters.to_use_max ) ) {
 				d_min = ( (strcmp(p_parameters.to_func, "norm") == 0) || (strcmp(p_parameters.to_func, "abs") == 0) ) ? 0 : -p_parameters.to_amp;
 				d_max = p_parameters.to_amp;
+			}
+			
+			if (p_parameters.to_use_min) {
+				d_min = p_parameters.to_min;
+			}
+			
+			if (p_parameters.to_use_max) {
+				d_max = p_parameters.to_max;
 			}
 			
 			// Debug {{{

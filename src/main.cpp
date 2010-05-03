@@ -50,7 +50,9 @@ void display_help(const char *argv0)
 	printf("	-r, --resize <num>				dimensions of produced image\n");
 	printf("	-t, --type (double|d|complex|c)			type of binary data\n");
 	printf("	-f, --func (abs|norm|real|imag|arg)		function for complex to real conversion\n");
-	printf("	-a, --amp <double>				value of image color scale maximum\n");
+	printf("	-a, --amp <double>				value of image color scale amplitude\n");
+	printf("	--min <double>				value of image color scale minimum\n");
+	printf("	--max <double>				value of image color scale maximum\n");
 	printf("	--reflect					reflect image, swaps x and y coords\n");
 	printf("	--palette <filename>				color palette filename\n\n");
 	
@@ -84,6 +86,8 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 		{"type", required_argument, NULL, 't'},
 		{"func", required_argument, NULL, 'f'},
 		{"amp", required_argument, NULL, 'a'},
+		{"min", required_argument, NULL, 0},
+		{"max", required_argument, NULL, 0},
 		{"reflect", no_argument, NULL, 0},
 		{"palette", required_argument, NULL, 0},
 		
@@ -123,6 +127,12 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 				sscanf(optarg, "%d", &p_parameters->bin_header);
 			} else if( strcmp(long_options[option_index].name, "footer") == 0 ) {
 				sscanf(optarg, "%d", &p_parameters->bin_footer);
+			} else if( strcmp(long_options[option_index].name, "min") == 0 ) {
+				sscanf(optarg, "%lf", &p_parameters->to_min);
+				p_parameters->to_use_min = true;
+			} else if( strcmp(long_options[option_index].name, "max") == 0 ) {
+				sscanf(optarg, "%lf", &p_parameters->to_max);
+				p_parameters->to_use_max = true;
 			}
 			break;
 			
@@ -252,6 +262,8 @@ int main(int argc, char *argv[])
 	
 	p_parameters.to_func = "real";
 	p_parameters.to_amp = -1;
+	p_parameters.to_use_min = false;
+	p_parameters.to_use_max = false;
 	
 	p_parameters.palette_file = 0;
 	

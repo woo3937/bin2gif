@@ -29,6 +29,10 @@ namespace sns
 		
 		char* to_func;
 		double to_amp;
+		double to_min;
+		double to_max;
+		bool to_use_min;
+		bool to_use_max;
 	};
 }
 //---------------------------------------------------------------------------
