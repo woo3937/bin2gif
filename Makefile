@@ -77,6 +77,6 @@ make_test_files: ./tests/tests.cpp
 test: all make_test_files
 	@./tests/make_test_files
 	@echo ""
-	@./bin2gif ./tests/*.bin
-	@./bin2gif-static --force ./tests/*.bin
+	@./bin2gif ./tests/*.dbl ./tests/*.cpl
+	@./bin2gif-static --force ./tests/*.dbl ./tests/*.cpl
 
