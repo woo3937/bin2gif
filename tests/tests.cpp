@@ -1,5 +1,5 @@
 #include <complex>
-#include <iostream>
+#include <cstdio>
 using namespace std;
 //---------------------------------------------------------------------------
 template<typename T>

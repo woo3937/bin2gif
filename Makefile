@@ -74,8 +74,9 @@ uninstall:
 make_test_files: ./tests/tests.cpp
 	$(CXX) ./tests/tests.cpp -o ./tests/make_test_files -openmp
 
-tests: bin2gif make_test_files
+test: all make_test_files
 	@./tests/make_test_files
 	@echo ""
 	@./bin2gif ./tests/*.bin
+	@./bin2gif-static --force ./tests/*.bin
 
