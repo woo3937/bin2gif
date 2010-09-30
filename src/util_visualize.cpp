@@ -272,9 +272,17 @@ namespace sns {
                             ) / p_parameters.bin_height/p_parameters.bin_height;
                         r = sqrt(r)*radius;
                         
-                        for (k = 0; k < nr-1; k++) {
-                            if (grid_r[k] <= r && r <= grid_r[k + 1]) {
-                                break;
+                        if (r < grid_r[k]) {
+                            for (; k >= 0; k--) {
+                                if (grid_r[k] <= r && r <= grid_r[k + 1]) {
+                                    break;
+                                }
+                            }
+                        } else {
+                            for (; k < nr-1; k++) {
+                                if (grid_r[k] <= r && r <= grid_r[k + 1]) {
+                                    break;
+                                }
                             }
                         }
                         
