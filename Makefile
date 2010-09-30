@@ -1,14 +1,22 @@
+###
+# Variables
+###
+
 CXX = icpc
-CFLAGS = -openmp
+
+INSTALL_DIR = ~/bin
+
+# Determine OpenMP flags for compiler
+ifeq ($(shell $(CXX) --version 2>&1 | grep Intel | sed -e 's/.*Intel.*/Intel/g'),Intel)
+	OPENMP_FLAG = -openmp
+	OPENMP_FLAG += -openmp-link=static
+else
+	OPENMP_FLAG = -fopenmp
+endif
+
 LIBS = -lgd -lm
 
-# For warning with feupdateenv in libimf.so
-LIBS += -shared-intel
-
-LIBS_STATIC = -lm -openmp-link=static
-
-INSTALL_DIR_HOME = ~/bin
-
+# Host specific variables
 HOSTNAME = $(shell hostname)
 
 ifeq ($(HOSTNAME),ktg1.phys.msu.ru)
@@ -17,40 +25,41 @@ ifeq ($(HOSTNAME),ktg1.phys.msu.ru)
 else
 	ifeq ($(HOSTNAME),oleg-pc)
 		HOSTTITLE = Oleg home PC
-		#LIBS_STATIC += /usr/lib/libgd.a
-		LIBS_STATIC += -lgd
 	else
 		HOSTTITLE = SKIF MSU cluster
-		INCLUDE_DIRS = -I/home/$(USER)/local/include -L/home/$(USER)/local/lib
+		INCLUDES += -I/home/$(USER)/local/include
+		LIBS += -L/home/$(USER)/local/lib
 		LIBS_STATIC += /home/$(USER)/local/lib/libgd.a
 	endif
 endif
 
 # Information messages
-
 MSG_BUILD = Build on $(HOSTTITLE), $(USER)@$(HOSTNAME)
 MSG_INSTALL = Install on $(HOSTTITLE), $(USER)@$(HOSTNAME)
 
 
+###
+# Targets
+###
+
 all: bin2gif bin2gif-static
-	rm -f ./*.o
 
-bin2gif: compile-main compile-util_visualize compile-util_fs
+bin2gif: main.o util_visualize.o util_fs.o
 	@echo $(MSG_BUILD)
-	$(CXX) ./*.o -o ./bin2gif $(INCLUDE_DIRS) $(LIBS) $(CFLAGS)
+	$(CXX) ./*.o -o ./bin2gif $(OPENMP_FLAG) $(LIBS) $(CFLAGS)
 
-bin2gif-static: compile-main compile-util_visualize compile-util_fs
+bin2gif-static: main.o util_visualize.o util_fs.o
 	@echo $(MSG_BUILD)
-	$(CXX) ./*.o -o ./bin2gif-static $(INCLUDE_DIRS) $(LIBS_DIRS) $(LIBS_STATIC) $(CFLAGS)
+	$(CXX) ./*.o -o ./bin2gif-static $(OPENMP_FLAG) $(LIBS) $(LIBS_STATIC) $(CFLAGS)
 
-compile-main: ./src/main.cpp ./src/parameters.h
-	$(CXX) -c ./src/main.cpp -o ./main.o $(INCLUDE_DIRS) $(CFLAGS)
+main.o: ./src/main.cpp ./src/parameters.h
+	$(CXX) -c ./src/main.cpp $(OPENMP_FLAG) $(INCLUDES) $(CFLAGS)
 
-compile-util_visualize: ./src/util_visualize.cpp
-	$(CXX) -c ./src/util_visualize.cpp -o ./util_visualize.o $(INCLUDE_DIRS) $(CFLAGS)
+util_visualize.o: ./src/util_visualize.cpp ./src/util_visualize.h
+	$(CXX) -c ./src/util_visualize.cpp $(OPENMP_FLAG) $(INCLUDES) $(CFLAGS)
 
-compile-util_fs: ./src/util_fs.cpp
-	$(CXX) -c ./src/util_fs.cpp -o ./util_fs.o $(INCLUDE_DIRS) $(CFLAGS)
+util_fs.o: ./src/util_fs.cpp ./src/util_fs.h
+	$(CXX) -c ./src/util_fs.cpp $(OPENMP_FLAG) $(INCLUDES) $(CFLAGS)
 
 clean:
 	rm -f ./bin2gif
@@ -64,12 +73,14 @@ clean-pbs:
 	rm -f ./.cleo-*
 	rm -f ./.panfs.*
 
-install: bin2gif
+install: bin2gif bin2gif-static
 	@echo $(MSG_INSTALL)
-	cp ./bin2gif $(INSTALL_DIR_HOME)/
+	cp ./bin2gif $(INSTALL_DIR)/
+	cp ./bin2gif-static $(INSTALL_DIR)/
 
 uninstall:
-	rm -f $(INSTALL_DIR_HOME)/bin2gif
+	rm -f $(INSTALL_DIR)/bin2gif
+	rm -f $(INSTALL_DIR)/bin2gif-static
 
 make_test_files: ./tests/tests.cpp
 	$(CXX) ./tests/tests.cpp -o ./tests/make_test_files -openmp
