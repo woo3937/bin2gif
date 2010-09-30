@@ -34,6 +34,14 @@ namespace sns {
         };
 
         /**
+        * Interpolate value
+        */
+        template<typename T>
+        T interpolate(double x1, T y1, double x2, T y2, double x) {
+            return (y1*(x2-x) + y2*(x-x1))/(x2-x1);
+        }
+
+        /**
         * Array with palette colors
         */
         int palette[256][3];
@@ -43,7 +51,7 @@ namespace sns {
         */
         struct palette_point {
             int i; // point index
-            
+
             int r; // red channel
             int g; // green channel
             int b; // blue channel
@@ -156,6 +164,8 @@ namespace sns {
             binary_file_type file_type = t_complex_double;
             off_t file_size, elements_in_file;
             void *data;
+            complex<double> *data_cd;
+            double *data_d;
 
             if (p_parameters.bin_axial) {
                 int nr = 0, nt = 0;
@@ -224,6 +234,8 @@ namespace sns {
                     fclose(fp);
                     return NULL;
                 }
+                complex<double> * axdata_cd = static_cast<complex<double>*>(axdata);
+                double * axdata_d = static_cast<double*>(axdata);
 
                 if (file_type == t_complex_double) {
                     elements_in_file = fread(axdata, sizeof(complex<double>), nr*nt, fp);
@@ -244,11 +256,11 @@ namespace sns {
                 // Slice central time layer
                 if (file_type == t_complex_double) {
                     memmove(axdata,
-                            &((static_cast<complex<double>*>(axdata))[nr*((nt-1)/2)]),
+                            &(axdata_cd[nr*((nt-1)/2)]),
                             sizeof(complex<double>)*nr);
                 } else {
                     memmove(axdata,
-                            &((static_cast<double*>(axdata))[nr*((nt-1)/2)]),
+                            &(axdata_d[nr*((nt-1)/2)]),
                             sizeof(double)*nr);
                 }
 
@@ -261,6 +273,15 @@ namespace sns {
                 } else {
                     data = new double[p_parameters.bin_width*p_parameters.bin_height];
                 }
+                if (!data) {
+                    printf("Cannot allocate memory for data.\n");
+                    delete[] grid_r;
+                    delete[] grid_t;
+                    delete[] axdata;
+                    return NULL;
+                }
+                data_cd = static_cast<complex<double>*>(data);
+                data_d = static_cast<double*>(data);
 
                 // Convert axial to square
                 int k = 0;
@@ -287,9 +308,11 @@ namespace sns {
                         }
                         
                         if (file_type == t_complex_double) {
-                            static_cast<complex<double>*>(data)[p_parameters.bin_width*j+i] = static_cast<complex<double>*>(axdata)[k];
+                            data_cd[p_parameters.bin_width*j+i] =
+                                interpolate< complex<double> >(grid_r[k], axdata_cd[k], grid_r[k+1], axdata_cd[k+1], r);
                         } else {
-                            static_cast<double*>(data)[p_parameters.bin_width*j+i] = static_cast<double*>(axdata)[k];
+                            data_d[p_parameters.bin_width*j+i] =
+                                interpolate< double >(grid_r[k], axdata_d[k], grid_r[k+1], axdata_d[k+1], r);
                         }
                     }
                 }
@@ -347,11 +370,12 @@ namespace sns {
                 } else {
                     data = new double[p_parameters.bin_width*p_parameters.bin_height];
                 }
-
                 if (!data) {
                     printf("Cannot allocate memory for data.\n");
                     return NULL;
                 }
+                data_cd = static_cast<complex<double>*>(data);
+                data_d = static_cast<double*>(data);
 
                 fp = fopen(filename, "r");
 
@@ -438,9 +462,9 @@ namespace sns {
                         for (ii = 0; ii < factor_x; ii++) {
                             kk = p_parameters.bin_width*(factor_y*j+jj)+(factor_x*i+ii);
                             if (file_type == t_complex_double) {
-                                d_value += func(static_cast<complex<double>*>(data)[kk]);
+                                d_value += func(data_cd[kk]);
                             } else {
-                                d_value += static_cast<double*>(data)[kk];
+                                d_value += data_d[kk];
                             }
                         }
                     }
