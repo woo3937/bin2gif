@@ -165,50 +165,221 @@ namespace sns
 			
 			binary_file_type file_type = t_complex_double;
 			off_t file_size, elements_in_file;
+			void *data;
 			
-			// Determine file type and image size {{{
-			if ( p_parameters.bin_width == -1 || p_parameters.bin_height == -1 ) {
-				
-				file_size = fs::file_size(filename) - p_parameters.bin_header - p_parameters.bin_footer;
-				
-				if( file_size <= 0 ) {
-					printf("Cannot determine file size.");
-					return 0;
+			if (p_parameters.bin_axial) {
+				int nr = 0, nt = 0;
+				double *grid_r = NULL, *grid_t = NULL;
+
+				fp = fopen(filename, "r");
+
+				if ( !fp ) {
+					printf("Cannot open input file %s  for reading.\n", filename);
+					return NULL;
 				}
-				
-				elements_in_file = file_size / sizeof(complex<double>);
-				n = (off_t)(sqrt((double)elements_in_file));
-				if ( elements_in_file != n*n ) {
-					file_type = t_double;
-					elements_in_file = file_size / sizeof(double);
-					n = (off_t)(sqrt((double)elements_in_file));
+
+				if (fread(&nr, sizeof(int), 1, fp) != 1) {
+					printf("Cannot read from file %s.\n", filename);
+					fclose(fp);
+					return NULL;
 				}
-				
-				p_parameters.bin_width = n;
-				p_parameters.bin_height = n;
-				
-				if ( n < p_parameters.to_width ) {
-					p_parameters.to_width = n;
+
+				grid_r = new double[nr];
+				if (!grid_r) {
+					printf("Cannot allocate memory for data.\n");
+					fclose(fp);
+					return NULL;
 				}
-				
-				if ( n < p_parameters.to_height ) {
-					p_parameters.to_height = n;
+
+				if (fread(grid_r, sizeof(double), nr, fp) != nr) {
+					printf("Cannot read from file %s.\n", filename);
+					delete[] grid_r;
+					fclose(fp);
+					return NULL;
 				}
-			}
-			// }}}
-			
-			// No resize if --resize not specified {{{
-			if ( p_parameters.to_width < 0 ) {
+
+				if (fread(&nt, sizeof(int), 1, fp) != 1) {
+					printf("Cannot read from file %s.\n", filename);
+					delete[] grid_r;
+					fclose(fp);
+					return NULL;
+				}
+
+				grid_t = new double[nt];
+				if (!grid_t) {
+					printf("Cannot allocate memory for data.\n");
+					delete[] grid_r;
+					fclose(fp);
+					return NULL;
+				}
+
+				if (fread(grid_t, sizeof(double), nt, fp) != nt) {
+					printf("Cannot read from file %s.\n", filename);
+					delete[] grid_r;
+					delete[] grid_t;
+					fclose(fp);
+					return NULL;
+				}
+
+				void *axdata;
+				if ( file_type == t_complex_double ) {
+					axdata = new complex<double>[nr*nt];
+				} else {
+					axdata = new double[nr*nt];
+				}
+				if (!axdata) {
+					printf("Cannot allocate memory for data.\n");
+					delete[] grid_r;
+					delete[] grid_t;
+					fclose(fp);
+					return NULL;
+				}
+
+				if (file_type == t_complex_double) {
+					elements_in_file = fread(axdata, sizeof(complex<double>), nr*nt, fp);
+				} else {
+					elements_in_file = fread(axdata, sizeof(double), nr*nt, fp);
+				}
+				if (elements_in_file != nr*nt) {
+					printf("Cannot read from file %s.\n", filename);
+					delete[] grid_r;
+					delete[] grid_t;
+					delete[] axdata;
+					fclose(fp);
+					return NULL;
+				}
+
+				fclose(fp);
+
+				// Slice central time layer
+				if (file_type == t_complex_double) {
+					memmove(axdata,
+						    &((static_cast<complex<double>*>(axdata))[nr*((nt-1)/2)]),
+						    sizeof(complex<double>)*nr);
+				} else {
+					memmove(axdata,
+						    &((static_cast<double*>(axdata))[nr*((nt-1)/2)]),
+						    sizeof(double)*nr);
+				}
+
+				// Convert axial to square
+				double radius = (grid_r[nr-1] + grid_r[nr-2])/2, r = 0;
+				p_parameters.bin_width = 2*static_cast<int>( radius / ( ((grid_r[nr-1]-grid_r[nr-2]) + (grid_r[1]-grid_r[0]))/2  ) );
+				p_parameters.bin_height = p_parameters.bin_width;
+				if (file_type == t_complex_double) {
+					data = new complex<double>[p_parameters.bin_width*p_parameters.bin_height];
+				} else {
+					data = new double[p_parameters.bin_width*p_parameters.bin_height];
+				}
+
+				// Convert axial to square
+				int k = 0;
+				for (j = 0; j < p_parameters.bin_height; j++) {
+					for (i = 0; i < p_parameters.bin_width; i++) {
+						r = 4*static_cast<double>(
+						        (j-p_parameters.bin_height/2)*(j-p_parameters.bin_height/2) +
+						        (i-p_parameters.bin_height/2)*(i-p_parameters.bin_height/2)
+						    ) / p_parameters.bin_height/p_parameters.bin_height;
+						r = sqrt(r)*radius;
+						
+						for (k = 0; k < nr-1; k++) {
+							if (grid_r[k] <= r && r <= grid_r[k + 1]) {
+								break;
+							}
+						}
+						
+						if (file_type == t_complex_double) {
+							static_cast<complex<double>*>(data)[p_parameters.bin_width*j+i] = static_cast<complex<double>*>(axdata)[k];
+						} else {
+							static_cast<double*>(data)[p_parameters.bin_width*j+i] = static_cast<double*>(axdata)[k];
+						}
+					}
+				}
+
+				// Temp hack
 				p_parameters.to_width = p_parameters.bin_width;
-			}
-			
-			if ( p_parameters.to_height < 0 ) {
 				p_parameters.to_height = p_parameters.bin_height;
-			}
-			// }}}
+
+				delete[] axdata;
+			} else { // Standart square matrix
+				// Determine file type and image size {{{
+				if ( p_parameters.bin_width == -1 || p_parameters.bin_height == -1 ) {
+					file_size = fs::file_size(filename) - p_parameters.bin_header - p_parameters.bin_footer;
+
+					if (file_size <= 0) {
+						printf("Cannot determine file size.\n");
+						return NULL;
+					}
+
+					elements_in_file = file_size / sizeof(complex<double>);
+					n = (off_t)(sqrt((double)elements_in_file));
+					if ( elements_in_file != n*n ) {
+						file_type = t_double;
+						elements_in_file = file_size / sizeof(double);
+						n = (off_t)(sqrt((double)elements_in_file));
+					}
+
+					p_parameters.bin_width = n;
+					p_parameters.bin_height = n;
+
+					if ( n < p_parameters.to_width ) {
+						p_parameters.to_width = n;
+					}
+
+					if ( n < p_parameters.to_height ) {
+						p_parameters.to_height = n;
+					}
+				}
+				// }}}
+
+				// No resize if --resize not specified {{{
+				if ( p_parameters.to_width < 0 ) {
+					p_parameters.to_width = p_parameters.bin_width;
+				}
+
+				if ( p_parameters.to_height < 0 ) {
+					p_parameters.to_height = p_parameters.bin_height;
+				}
+
+				factor_x = p_parameters.bin_width/p_parameters.to_width;
+				factor_y = p_parameters.bin_height/p_parameters.to_height;
+
+				if ( file_type == t_complex_double ) {
+					data = new complex<double>[p_parameters.bin_width*p_parameters.bin_height];
+				} else {
+					data = new double[p_parameters.bin_width*p_parameters.bin_height];
+				}
+
+				if ( !data ) {
+					printf("Cannot allocate memory for data.\n");
+					return NULL;
+				}
+
+				fp = fopen(filename, "r");
 			
-			factor_x = p_parameters.bin_width/p_parameters.to_width;
-			factor_y = p_parameters.bin_height/p_parameters.to_height;
+				if ( !fp ) {
+					printf("Cannot open input file %s  for reading.\n", filename);
+					delete[] data;
+					return NULL;
+				}
+			
+				fseek(fp, p_parameters.bin_header, SEEK_SET);
+			
+				if ( file_type == t_complex_double ) {
+					elements_in_file = fread(data, sizeof(complex<double>), p_parameters.bin_width*p_parameters.bin_height, fp);
+				} else {
+					elements_in_file = fread(data, sizeof(double), p_parameters.bin_width*p_parameters.bin_height, fp);
+				}
+			
+				if ( elements_in_file != p_parameters.bin_width*p_parameters.bin_height ) {
+					printf("Bad file format or corrupted file, only %ld elements of %d readed.\n", elements_in_file, p_parameters.bin_width*p_parameters.bin_height);
+					delete[] data;
+					fclose(fp);
+					return NULL;
+				}
+			
+				fclose(fp);
+			} // Data loaded
 			
 			// Debug {{{
 			if ( p_parameters.debug ) {
@@ -238,51 +409,13 @@ namespace sns
 				
 			}
 			// Debug }}}
-			
-			void *data;
-
-			if ( file_type == t_complex_double ) {
-				data = new complex<double>[p_parameters.bin_width*p_parameters.bin_height];
-			} else {
-				data = new double[p_parameters.bin_width*p_parameters.bin_height];
-			}
-			
-			if ( !data ) {
-				printf("Cannot allocate memory for data.");
-				return 0;
-			}
-
-			fp = fopen(filename, "r");
-			
-			if ( !fp ) {
-				printf("Cannot open input file %s  for reading.", filename);
-				delete[] data;
-				return 0;
-			}
-			
-			fseek(fp, p_parameters.bin_header, SEEK_SET);
-			
-			if ( file_type == t_complex_double ) {
-				elements_in_file = fread(data, sizeof(complex<double>), p_parameters.bin_width*p_parameters.bin_height, fp);
-			} else {
-				elements_in_file = fread(data, sizeof(double), p_parameters.bin_width*p_parameters.bin_height, fp);
-			}
-			
-			if ( elements_in_file != p_parameters.bin_width*p_parameters.bin_height ) {
-				printf("Bad file format or corrupted file, only %ld elements of %d readed.", elements_in_file, p_parameters.bin_width*p_parameters.bin_height);
-				delete[] data;
-				fclose(fp);
-				return 0;
-			}
-			
-			fclose(fp);
 
 			double *ddata = new double[p_parameters.to_width*p_parameters.to_height];
 			
 			if ( !ddata ) {
-				printf("Cannot allocate memory for data.");
+				printf("Cannot allocate memory for data.\n");
 				delete[] data;
-				return 0;
+				return NULL;
 			}
 
 			if ( !p_parameters.to_reflect ) {
@@ -292,14 +425,13 @@ namespace sns
 			}
 
 			if ( !im ) {
-				printf("Cannot create GD image.");
+				printf("Cannot create GD image.\n");
 				delete[] data;
 				delete[] ddata;
-				return 0;
+				return NULL;
 			}
 
 			double d_value = 0;
-
 			#pragma omp parallel for private(d_value,i,ii,jj) shared(ddata)
 			for ( j = 0; j < p_parameters.to_height; j++ ) {
 				for ( i = 0; i < p_parameters.to_width; i++ ) {
@@ -352,18 +484,18 @@ namespace sns
 
 			double d_max, d_min;
 			
-		    d_min = *min_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
-		    d_max = *max_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
+			d_min = *min_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
+			d_max = *max_element(ddata, ddata + p_parameters.to_width*p_parameters.to_height);
 			
 			if ( strcmp(p_parameters.to_func, "arg") == 0 ) {
 				if ( p_parameters.debug ) {
 
-				    //printf("\033[0;33mDebug {{{\n");
+					//printf("\033[0;33mDebug {{{\n");
 				
-				    printf("d_min: %lf\n", d_min);
-				    printf("d_max: %lf\n", d_max);
+					printf("d_min: %lf\n", d_min);
+					printf("d_max: %lf\n", d_max);
 				
-				    //printf("Debug }}}\033[0m\n");
+					//printf("Debug }}}\033[0m\n");
 				}
 				
 				d_min = -M_PI;
@@ -396,7 +528,6 @@ namespace sns
 
 			for ( j = 0; j < p_parameters.to_height; j++ ) {
 				for ( i = 0; i < p_parameters.to_width; i++ ) {
-
 					c_color = static_cast<int>(255*(ddata[p_parameters.to_width*j+i]-d_min)/(d_max-d_min));
 					c_color = ( c_color > 255 ) ? 255 : ( (c_color < 0) ? 0 : c_color );
 					c_color = gdImageColorAllocate(im, palette[c_color][0], palette[c_color][1], palette[c_color][2]);
@@ -406,8 +537,6 @@ namespace sns
 					} else {
 						gdImageSetPixel(im, j, i, c_color );
 					}
-					
-
 				}
 			}
 
@@ -427,7 +556,7 @@ namespace sns
 			FILE *fp = fopen(filename_gif, "wb");
 			
 			if ( !fp ) {
-				printf("Cannot open output file %s for writing.", filename_gif);
+				printf("Cannot open output file %s for writing.\n", filename_gif);
 				gdImageDestroy(im);
 				return 1;
 			}

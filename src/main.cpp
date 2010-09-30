@@ -54,7 +54,8 @@ void display_help(const char *argv0)
 	printf("	--min <double>				value of image color scale minimum\n");
 	printf("	--max <double>				value of image color scale maximum\n");
 	printf("	--reflect					reflect image, swaps x and y coords\n");
-	printf("	--palette <filename>				color palette filename\n\n");
+	printf("	--palette <filename>				color palette filename\n");
+	printf("	--axial						color palette filename\n\n");
 	
 	//printf("	--fixphase					fix 2π jumps in calculated complex arguments \n");
 	
@@ -66,13 +67,10 @@ void display_help(const char *argv0)
 	printf("	--verbose					verbosely output\n\n");
 	printf("	-v, --version					display program vesion\n");
 	printf("	-h, --help					display this help page\n");
-    
+	
 	printf("\nExamples:\n");
 	printf("	%s ~/results/today/*.cpl\n", program_name);
 	printf("	%s --header 8 ~/results/today/ ~/results/tomorrow/file.ext\n", program_name);
-	
-	printf("\nAuthor: %s.\n", AUTHOR);
-	printf("Report bugs to <%s>.\n", BUGREPORT_EMAIL);
 }
 //---------------------------------------------------------------------------
 void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameters)
@@ -90,6 +88,7 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 		{"max", required_argument, NULL, 0},
 		{"reflect", no_argument, NULL, 0},
 		{"palette", required_argument, NULL, 0},
+		{"axial", no_argument, NULL, 0},
 		
 		//{"fixphase", no_argument, NULL, 0},
 		
@@ -108,9 +107,11 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
 
 	while ( (c = getopt_long_only(argc, argv, "s:r:t:f:a:hvd", long_options, &option_index)) != -1 ) {
 		switch(c) {
-        	    case 0:
+		    case 0:
 			if(        strcmp(long_options[option_index].name, "reflect") == 0 ) {
 				p_parameters->to_reflect = true;
+			} else if( strcmp(long_options[option_index].name, "axial") == 0 ) {
+				p_parameters->bin_axial = true;
 			} else if( strcmp(long_options[option_index].name, "palette") == 0 ) {
 				p_parameters->palette_file = optarg;
 			//} else if( strcmp(long_options[option_index].name, "fixphase") == 0 ) {
@@ -251,6 +252,7 @@ int main(int argc, char *argv[])
 	p_parameters.bin_width = -1;  // Autodetect
 	p_parameters.bin_height = -1; // Autodetect
 	p_parameters.bin_type = ' ';   // Autodetect
+	p_parameters.bin_axial = false; // Standart square matrix
 
 	p_parameters.bin_header = 0;
 	p_parameters.bin_footer = 0;
