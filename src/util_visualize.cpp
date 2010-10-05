@@ -266,7 +266,7 @@ namespace sns {
 
                 // Convert axial to square
                 double radius = (grid_r[nr-1] + grid_r[nr-2])/2, r = 0;
-                p_parameters.bin_width = 2*static_cast<int>( radius / ( ((grid_r[nr-1]-grid_r[nr-2]) + (grid_r[1]-grid_r[0]))/2  ) );
+                p_parameters.bin_width = 2*static_cast<int>( radius / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) );
                 p_parameters.bin_height = p_parameters.bin_width;
                 if (file_type == t_complex_double) {
                     data = new complex<double>[p_parameters.bin_width*p_parameters.bin_height];
