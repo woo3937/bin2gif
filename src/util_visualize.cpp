@@ -266,12 +266,14 @@ namespace sns {
 
                 // Convert axial to square
                 double radius = (grid_r[nr-1] + grid_r[nr-2])/2, r = 0;
-                p_parameters.bin_width = 2*static_cast<int>( radius / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) );
-                p_parameters.bin_height = p_parameters.bin_width;
+                if (p_parameters.to_width < 0) {
+                    p_parameters.to_width = 2*static_cast<int>( radius / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) );
+                }
+                p_parameters.to_height = p_parameters.to_width;
                 if (file_type == t_complex_double) {
-                    data = new complex<double>[p_parameters.bin_width*p_parameters.bin_height];
+                    data = new complex<double>[p_parameters.to_width*p_parameters.to_height];
                 } else {
-                    data = new double[p_parameters.bin_width*p_parameters.bin_height];
+                    data = new double[p_parameters.to_width*p_parameters.to_height];
                 }
                 if (!data) {
                     printf("Cannot allocate memory for data.\n");
@@ -285,12 +287,12 @@ namespace sns {
 
                 // Convert axial to square
                 int k = 0;
-                for (j = 0; j < p_parameters.bin_height; j++) {
-                    for (i = 0; i < p_parameters.bin_width; i++) {
+                for (j = 0; j < p_parameters.to_height; j++) {
+                    for (i = 0; i < p_parameters.to_width; i++) {
                         r = 4*static_cast<double>(
-                                (j-p_parameters.bin_height/2)*(j-p_parameters.bin_height/2) +
-                                (i-p_parameters.bin_height/2)*(i-p_parameters.bin_height/2)
-                            ) / p_parameters.bin_height/p_parameters.bin_height;
+                                (j-p_parameters.to_height/2)*(j-p_parameters.to_height/2) +
+                                (i-p_parameters.to_height/2)*(i-p_parameters.to_height/2)
+                            ) / p_parameters.to_height/p_parameters.to_height;
                         r = sqrt(r)*radius;
                         
                         if (r < grid_r[k]) {
@@ -308,18 +310,20 @@ namespace sns {
                         }
                         
                         if (file_type == t_complex_double) {
-                            data_cd[p_parameters.bin_width*j+i] =
+                            data_cd[p_parameters.to_width*j+i] =
                                 interpolate< complex<double> >(grid_r[k], axdata_cd[k], grid_r[k+1], axdata_cd[k+1], r);
                         } else {
-                            data_d[p_parameters.bin_width*j+i] =
+                            data_d[p_parameters.to_width*j+i] =
                                 interpolate< double >(grid_r[k], axdata_d[k], grid_r[k+1], axdata_d[k+1], r);
                         }
                     }
                 }
 
                 // Temp hack
-                p_parameters.to_width = p_parameters.bin_width;
-                p_parameters.to_height = p_parameters.bin_height;
+                p_parameters.bin_width = p_parameters.to_width;
+                p_parameters.bin_height = p_parameters.to_height;
+                factor_x = 1;
+                factor_y = 1;
 
                 delete[] axdata;
             } else { // Standart square matrix
