@@ -6,6 +6,8 @@ CXX = icpc
 
 INSTALL_DIR = ~/bin
 
+PWD = $(shell pwd)
+
 # Determine OpenMP flags for compiler
 ifeq ($(shell $(CXX) --version 2>&1 | grep Intel | sed -e 's/.*Intel.*/Intel/g'),Intel)
 	OPENMP_FLAG = -openmp
@@ -73,10 +75,17 @@ clean-pbs:
 	rm -f ./.cleo-*
 	rm -f ./.panfs.*
 
-install: bin2gif bin2gif-static
+link: bin2gif bin2gif-static uninstall
 	@echo $(MSG_INSTALL)
-	cp ./bin2gif $(INSTALL_DIR)/
-	cp ./bin2gif-static $(INSTALL_DIR)/
+	mkdir -p $(INSTALL_DIR)
+	ln -s $(PWD)/bin2gif $(INSTALL_DIR)/
+	ln -s $(PWD)/bin2gif-static $(INSTALL_DIR)/
+
+install: bin2gif bin2gif-static uninstall
+	@echo $(MSG_INSTALL)
+	mkdir -p $(INSTALL_DIR)
+	cp $(PWD)/bin2gif $(INSTALL_DIR)/
+	cp $(PWD)/bin2gif-static $(INSTALL_DIR)/
 
 uninstall:
 	rm -f $(INSTALL_DIR)/bin2gif
