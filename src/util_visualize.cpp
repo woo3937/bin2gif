@@ -179,7 +179,7 @@ namespace sns {
                 }
 
                 if (fread(&nr, sizeof(int), 1, fp) != 1) {
-                    printf("Cannot read from file %s.\n", filename);
+                    printf("Cannot read Nr from file %s.\n", filename);
                     fclose(fp);
                     return NULL;
                 }
@@ -192,14 +192,14 @@ namespace sns {
                 }
 
                 if (fread(grid_r, sizeof(double), nr, fp) != nr) {
-                    printf("Cannot read from file %s.\n", filename);
+                    printf("Cannot read grid_r from file %s.\n", filename);
                     delete[] grid_r;
                     fclose(fp);
                     return NULL;
                 }
 
                 if (fread(&nt, sizeof(int), 1, fp) != 1) {
-                    printf("Cannot read from file %s.\n", filename);
+                    printf("Cannot read Nt from file %s.\n", filename);
                     delete[] grid_r;
                     fclose(fp);
                     return NULL;
@@ -214,7 +214,7 @@ namespace sns {
                 }
 
                 if (fread(grid_t, sizeof(double), nt, fp) != nt) {
-                    printf("Cannot read from file %s.\n", filename);
+                    printf("Cannot read grid_t from file %s.\n", filename);
                     delete[] grid_r;
                     delete[] grid_t;
                     fclose(fp);
@@ -243,7 +243,7 @@ namespace sns {
                     elements_in_file = fread(axdata, sizeof(double), nr*nt, fp);
                 }
                 if (elements_in_file != nr*nt) {
-                    printf("Cannot read from file %s.\n", filename);
+                    printf("Cannot read axial data from file %s.\n", filename);
                     delete[] grid_r;
                     delete[] grid_t;
                     delete[] axdata;
