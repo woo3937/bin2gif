@@ -168,6 +168,16 @@ namespace sns {
             double *data_d;
 
             if (p_parameters.bin_axial) {
+                // TODO: Add filetype determining {{{
+                if (p_parameters.bin_type == 'c') {
+                    file_type = t_complex_double;
+                } else if (p_parameters.bin_type == 'd') {
+                    file_type = t_double;
+                } else {
+                    return NULL;
+                }
+                // }}}
+
                 int nr = 0, nt = 0;
                 double *grid_r = NULL, *grid_t = NULL;
 
@@ -234,8 +244,8 @@ namespace sns {
                     fclose(fp);
                     return NULL;
                 }
-                complex<double> * axdata_cd = static_cast<complex<double>*>(axdata);
-                double * axdata_d = static_cast<double*>(axdata);
+                complex<double> *axdata_cd = static_cast<complex<double>*>(axdata);
+                double *axdata_d = static_cast<double*>(axdata);
 
                 if (file_type == t_complex_double) {
                     elements_in_file = fread(axdata, sizeof(complex<double>), nr*nt, fp);
@@ -243,7 +253,7 @@ namespace sns {
                     elements_in_file = fread(axdata, sizeof(double), nr*nt, fp);
                 }
                 if (elements_in_file != nr*nt) {
-                    printf("Cannot read axial data from file %s.\n", filename);
+                    printf("Cannot read axial data from file %s. Read %d %s elements, but %d expected.\n", filename, elements_in_file, (file_type == t_complex_double) ? "double" : "complex", nr*nt);
                     delete[] grid_r;
                     delete[] grid_t;
                     delete[] axdata;
