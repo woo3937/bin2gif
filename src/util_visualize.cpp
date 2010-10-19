@@ -232,7 +232,7 @@ namespace sns {
                 }
 
                 void *axdata;
-                if ( file_type == t_complex_double ) {
+                if (file_type == t_complex_double) {
                     axdata = new complex<double>[nr*nt];
                 } else {
                     axdata = new double[nr*nt];

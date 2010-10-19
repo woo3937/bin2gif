@@ -2,8 +2,6 @@
 # Variables
 ###
 
-CXX = icpc
-
 INSTALL_DIR = ~/bin
 
 PWD = $(shell pwd)
@@ -25,13 +23,13 @@ ifeq ($(HOSTNAME),ktg1.phys.msu.ru)
 	HOSTTITLE = ILC MSU cluster
 	LIBS_STATIC += /usr/lib/libgd.a
 else
-	ifeq ($(HOSTNAME),oleg-pc)
-		HOSTTITLE = Oleg home PC
-	else
+	ifeq ($(HOSTNAME),t60-2.parallel.ru)
 		HOSTTITLE = SKIF MSU cluster
 		INCLUDES += -I/home/$(USER)/local/include
 		LIBS += -L/home/$(USER)/local/lib
 		LIBS_STATIC += /home/$(USER)/local/lib/libgd.a
+	else
+		HOSTTITLE = your PC
 	endif
 endif
 

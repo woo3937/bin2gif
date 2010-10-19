@@ -18,7 +18,7 @@ using namespace sns;
 #define BUGREPORT_EMAIL "efimovov@gmail.com"
 //---------------------------------------------------------------------------
 const char* get_program_name(const char *argv0) {
-    char* ch = strrchr(argv0, '/');
+    char* ch = strrchr(const_cast<char*>(argv0), '/');
     if (ch != NULL) {
         return ch + 1;
     } else {
@@ -255,7 +255,7 @@ int main(int argc, char *argv[]) {
     p_parameters.to_reflect = false;
     p_parameters.to_fixphase = false;
 
-    p_parameters.to_func = "real";
+    p_parameters.to_func = const_cast<char*>("real");
     p_parameters.to_amp = -1;
     p_parameters.to_use_min = false;
     p_parameters.to_use_max = false;
