@@ -6,6 +6,8 @@ INSTALL_DIR = ~/bin
 
 PWD = $(shell pwd)
 
+CFLAGS += -Wall
+
 # Determine OpenMP flags for compiler
 ifeq ($(shell $(CXX) --version 2>&1 | grep Intel | sed -e 's/.*Intel.*/Intel/g'),Intel)
 	OPENMP_FLAG = -openmp
@@ -46,20 +48,20 @@ all: bin2gif bin2gif-static
 
 bin2gif: main.o util_visualize.o util_fs.o
 	@echo $(MSG_BUILD)
-	$(CXX) ./*.o -o ./bin2gif $(OPENMP_FLAG) $(LIBS) $(CFLAGS)
+	$(CXX) $(OPENMP_FLAG) ./*.o -o ./bin2gif $(LIBS) $(CFLAGS)
 
 bin2gif-static: main.o util_visualize.o util_fs.o
 	@echo $(MSG_BUILD)
-	$(CXX) ./*.o -o ./bin2gif-static $(OPENMP_FLAG) $(LIBS) $(LIBS_STATIC) $(CFLAGS)
+	$(CXX) $(OPENMP_FLAG) ./*.o -o ./bin2gif-static $(LIBS) $(LIBS_STATIC) $(CFLAGS)
 
 main.o: ./src/main.cpp ./src/parameters.h
-	$(CXX) -c ./src/main.cpp $(OPENMP_FLAG) $(INCLUDES) $(CFLAGS)
+	$(CXX) $(OPENMP_FLAG) -c ./src/main.cpp $(INCLUDES) $(CFLAGS)
 
 util_visualize.o: ./src/util_visualize.cpp ./src/util_visualize.h
-	$(CXX) -c ./src/util_visualize.cpp $(OPENMP_FLAG) $(INCLUDES) $(CFLAGS)
+	$(CXX) $(OPENMP_FLAG) -c ./src/util_visualize.cpp $(INCLUDES) $(CFLAGS)
 
 util_fs.o: ./src/util_fs.cpp ./src/util_fs.h
-	$(CXX) -c ./src/util_fs.cpp $(OPENMP_FLAG) $(INCLUDES) $(CFLAGS)
+	$(CXX) $(OPENMP_FLAG) -c ./src/util_fs.cpp $(INCLUDES) $(CFLAGS)
 
 clean:
 	rm -f ./bin2gif
@@ -99,8 +101,8 @@ uninstall:
 test: bin2gif ./tests/make_test_files
 	@./tests/make_test_files
 	@echo ""
-	@./bin2gif --force ./tests/*.dbl ./tests/*.cpl
+	@./bin2gif --force -t double  --func real ./tests/*.dbl
+	@./bin2gif --force -t complex --func norm ./tests/*.cpl
 	@./bin2gif --force --axial -t double  --func real ./tests/*.adbl
 	@./bin2gif --force --axial -t complex --func norm ./tests/*.acpl
-
 

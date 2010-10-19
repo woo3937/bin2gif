@@ -265,21 +265,19 @@ namespace sns {
 
                 // Slice central time layer
                 if (file_type == t_complex_double) {
-                    memmove(axdata,
-                            &(axdata_cd[nr*((nt-1)/2)]),
-                            sizeof(complex<double>)*nr);
+                    axdata_cd += nr*((nt-1)/2);
                 } else {
-                    memmove(axdata,
-                            &(axdata_d[nr*((nt-1)/2)]),
-                            sizeof(double)*nr);
+                    axdata_d += nr*((nt-1)/2);
                 }
 
                 // Convert axial to square
                 double radius = (grid_r[nr-1] + grid_r[nr-2])/2, r = 0;
+
                 if (p_parameters.to_width < 0) {
-                    p_parameters.to_width = 2*static_cast<int>( radius / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) );
+                    p_parameters.to_width = 2*static_cast<int>( radius / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1;
                 }
                 p_parameters.to_height = p_parameters.to_width;
+
                 if (file_type == t_complex_double) {
                     data = new complex<double>[p_parameters.to_width*p_parameters.to_height];
                 } else {
@@ -304,27 +302,35 @@ namespace sns {
                                 (i-p_parameters.to_height/2)*(i-p_parameters.to_height/2)
                             ) / p_parameters.to_height/p_parameters.to_height;
                         r = sqrt(r)*radius;
-                        
-                        if (r < grid_r[k]) {
-                            for (; k >= 0; k--) {
-                                if (grid_r[k] <= r && r <= grid_r[k + 1]) {
-                                    break;
+
+                        if (r < radius) {
+                            if (r < grid_r[k]) {
+                                for (; k >= 0; k--) {
+                                    if (grid_r[k] <= r && r <= grid_r[k + 1]) {
+                                        break;
+                                    }
+                                }
+                            } else {
+                                for (; k < nr-1; k++) {
+                                    if (grid_r[k] <= r && r <= grid_r[k + 1]) {
+                                        break;
+                                    }
                                 }
                             }
-                        } else {
-                            for (; k < nr-1; k++) {
-                                if (grid_r[k] <= r && r <= grid_r[k + 1]) {
-                                    break;
-                                }
+                            
+                            if (file_type == t_complex_double) {
+                                data_cd[p_parameters.to_width*j+i] =
+                                    interpolate< complex<double> >(grid_r[k], axdata_cd[k], grid_r[k+1], axdata_cd[k+1], r);
+                            } else {
+                                data_d[p_parameters.to_width*j+i] =
+                                    interpolate< double >(grid_r[k], axdata_d[k], grid_r[k+1], axdata_d[k+1], r);
                             }
-                        }
-                        
-                        if (file_type == t_complex_double) {
-                            data_cd[p_parameters.to_width*j+i] =
-                                interpolate< complex<double> >(grid_r[k], axdata_cd[k], grid_r[k+1], axdata_cd[k+1], r);
                         } else {
-                            data_d[p_parameters.to_width*j+i] =
-                                interpolate< double >(grid_r[k], axdata_d[k], grid_r[k+1], axdata_d[k+1], r);
+                            if (file_type == t_complex_double) {
+                                data_cd[p_parameters.to_width*j+i] = 0;
+                            } else {
+                                data_d[p_parameters.to_width*j+i] = 0;
+                            }
                         }
                     }
                 }
@@ -466,7 +472,7 @@ namespace sns {
             }
 
             double d_value = 0;
-            #pragma omp parallel for private(d_value,i,ii,jj) shared(ddata)
+            // #pragma omp parallel for private(d_value,i,j,ii,jj) shared(ddata)
             for (j = 0; j < p_parameters.to_height; j++) {
                 for (i = 0; i < p_parameters.to_width; i++) {
 
