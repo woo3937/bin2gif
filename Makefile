@@ -67,6 +67,7 @@ clean:
 	rm -f ./bin2gif
 	rm -f ./bin2gif-static
 	rm -f ./*.o
+	rm -f ./tests/*.o
 
 clean-pbs:
 	rm -f ./*.rep-*
@@ -91,12 +92,17 @@ uninstall:
 	rm -f $(INSTALL_DIR)/bin2gif
 	rm -f $(INSTALL_DIR)/bin2gif-static
 
-make_test_files: ./tests/tests.cpp
-	$(CXX) ./tests/tests.cpp -o ./tests/make_test_files -openmp
+./tests/make_test_files: ./tests/tests.o
+	$(CXX) ./tests/tests.o -o ./tests/make_test_files $(LIBS) $(CFLAGS)
 
-test: all make_test_files
+./tests/tests.o: ./tests/tests.cpp
+	$(CXX) -c ./tests/tests.cpp -o ./tests/tests.o $(INCLUDES) $(CFLAGS)
+
+test: bin2gif ./tests/make_test_files
 	@./tests/make_test_files
 	@echo ""
-	@./bin2gif ./tests/*.dbl ./tests/*.cpl
-	@./bin2gif-static --force ./tests/*.dbl ./tests/*.cpl
+	@./bin2gif --force ./tests/*.dbl ./tests/*.cpl
+	@./bin2gif --force --axial -t double  --func real ./tests/*.adbl
+	@./bin2gif --force --axial -t complex --func norm ./tests/*.acpl
+
 

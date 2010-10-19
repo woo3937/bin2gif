@@ -10,6 +10,8 @@ make_test_files
 *.bin
 *.dbl
 *.cpl
+*.adbl
+*.acpl
 *.gif
 # Ignore PBS and CLEO log files
 machinefile*
