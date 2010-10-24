@@ -85,6 +85,7 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
         {"reflect", no_argument, NULL, 0},
         {"palette", required_argument, NULL, 0},
         {"axial", no_argument, NULL, 0},
+        {"axial-all", no_argument, NULL, 0},
 
         //{"fixphase", no_argument, NULL, 0},
 
@@ -104,62 +105,61 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
     while ((c = getopt_long_only(argc, argv, "s:r:t:f:a:hvd", long_options, &option_index)) != -1) {
         switch (c) {
             case 0:
-            if (        strcmp(long_options[option_index].name, "reflect") == 0) {
-                p_parameters->to_reflect = true;
-            } else if (strcmp(long_options[option_index].name, "axial") == 0) {
-                p_parameters->bin_axial = true;
-            } else if (strcmp(long_options[option_index].name, "palette") == 0) {
-                p_parameters->palette_file = optarg;
-            //} else if (strcmp(long_options[option_index].name, "fixphase") == 0) {
-            //    p_parameters->to_fixphase = true;
-            } else if (strcmp(long_options[option_index].name, "delete-original") == 0) {
-                p_parameters->delete_original = true;
-            } else if (strcmp(long_options[option_index].name, "debug") == 0) {
-                p_parameters->debug = true;
-            } else if (strcmp(long_options[option_index].name, "verbose") == 0) {
-                p_parameters->verbose = true;
-            } else if (strcmp(long_options[option_index].name, "force") == 0) {
-                p_parameters->force = true;
-            } else if (strcmp(long_options[option_index].name, "header") == 0) {
-                sscanf(optarg, "%d", &p_parameters->bin_header);
-            } else if (strcmp(long_options[option_index].name, "footer") == 0) {
-                sscanf(optarg, "%d", &p_parameters->bin_footer);
-            } else if (strcmp(long_options[option_index].name, "min") == 0) {
-                sscanf(optarg, "%lf", &p_parameters->to_min);
-                p_parameters->to_use_min = true;
-            } else if (strcmp(long_options[option_index].name, "max") == 0) {
-                sscanf(optarg, "%lf", &p_parameters->to_max);
-                p_parameters->to_use_max = true;
-            }
-            break;
-            
+                if (        strcmp(long_options[option_index].name, "reflect") == 0) {
+                    p_parameters->to_reflect = true;
+                } else if (strcmp(long_options[option_index].name, "axial") == 0) {
+                    p_parameters->bin_axial = true;
+            } else if (strcmp(long_options[option_index].name, "axial-all") == 0) {
+                p_parameters->bin_axial_all = true;
+                } else if (strcmp(long_options[option_index].name, "palette") == 0) {
+                    p_parameters->palette_file = optarg;
+                //} else if (strcmp(long_options[option_index].name, "fixphase") == 0) {
+                //    p_parameters->to_fixphase = true;
+                } else if (strcmp(long_options[option_index].name, "delete-original") == 0) {
+                    p_parameters->delete_original = true;
+                } else if (strcmp(long_options[option_index].name, "debug") == 0) {
+                    p_parameters->debug = true;
+                } else if (strcmp(long_options[option_index].name, "verbose") == 0) {
+                    p_parameters->verbose = true;
+                } else if (strcmp(long_options[option_index].name, "force") == 0) {
+                    p_parameters->force = true;
+                } else if (strcmp(long_options[option_index].name, "header") == 0) {
+                    sscanf(optarg, "%d", &p_parameters->bin_header);
+                } else if (strcmp(long_options[option_index].name, "footer") == 0) {
+                    sscanf(optarg, "%d", &p_parameters->bin_footer);
+                } else if (strcmp(long_options[option_index].name, "min") == 0) {
+                    sscanf(optarg, "%lf", &p_parameters->to_min);
+                    p_parameters->to_use_min = true;
+                } else if (strcmp(long_options[option_index].name, "max") == 0) {
+                    sscanf(optarg, "%lf", &p_parameters->to_max);
+                    p_parameters->to_use_max = true;
+                }
+                break;
             case 's':
-            sscanf(optarg, "%d", &p_parameters->bin_width);
-            p_parameters->bin_height = p_parameters->bin_width;
-            break;
+                sscanf(optarg, "%dx%d", &p_parameters->bin_width, &p_parameters->bin_height);
+                break;
             case 'r':
-            sscanf(optarg, "%d", &p_parameters->to_width);
-            p_parameters->to_height = p_parameters->to_width;
-            break;
+                sscanf(optarg, "%dx%d", &p_parameters->to_width, &p_parameters->to_height);
+                break;
             case 't':
-            p_parameters->bin_type = optarg[0];
-            break;
+                p_parameters->bin_type = optarg[0];
+                break;
             case 'f':
-            p_parameters->to_func = optarg;
-            break;
+                p_parameters->to_func = optarg;
+                break;
             case 'a':
-            sscanf(optarg, "%lf", &p_parameters->to_amp);
-            break;
+                sscanf(optarg, "%lf", &p_parameters->to_amp);
+                break;
             case '?':
-            printf("Unknown option %d.\n", optopt);
-                case 'h':
-            display_help(argv[0]);
-            exit(0);
-                case 'v':
-            display_version(argv[0]);
-            exit(0);
+                printf("Unknown option %d.\n", optopt);
+            case 'h':
+                display_help(argv[0]);
+                exit(0);
+            case 'v':
+                display_version(argv[0]);
+                exit(0);
             default:
-            break;
+                break;
         }
     }
 
@@ -246,6 +246,7 @@ int main(int argc, char *argv[]) {
     p_parameters.bin_height = -1; // Autodetect
     p_parameters.bin_type = ' ';   // Autodetect
     p_parameters.bin_axial = false; // Standart square matrix
+    p_parameters.bin_axial_all = false; // Standart square matrix
 
     p_parameters.bin_header = 0;
     p_parameters.bin_footer = 0;
@@ -264,6 +265,11 @@ int main(int argc, char *argv[]) {
 
     // Parse program command line options
     get_program_options(argc, argv, &p_parameters);
+
+    if (p_parameters.bin_axial && p_parameters.bin_axial_all) {
+        printf("You should use only one option at same time: --axial OR --axial-all");
+        return 1;
+    }
 
     // Confirm originals deletion
     if (p_parameters.delete_original) {

@@ -34,11 +34,28 @@ namespace sns {
         };
 
         /**
-        * Interpolate value
+        * Interpolate value by one coordinate
         */
         template<typename T>
-        T interpolate(double x1, T y1, double x2, T y2, double x) {
-            return (y1*(x2-x) + y2*(x-x1))/(x2-x1);
+        T interpolate1D(double r1, double r2, T I1, T I2, double r) {
+            return (I1*(r2-r) + I2*(r-r1))/(r2-r1);
+        }
+
+        /**
+        * Interpolate value by two coordinates
+        */
+        template<typename T>
+        T interpolate2D(double r1, double r2, double t1, double t2,
+                      T I11, T I12, T I21, T I22,  double r, double t) {
+            T I1121 = interpolate1D<T>(r1, r2, I11, I21, r);
+            T I1222 = interpolate1D<T>(r1, r2, I12, I22, r);
+            T I1121_1222 = interpolate1D<T>(t1, t2, I1121, I1222, t);
+
+            T I1112 = interpolate1D<T>(t1, t2, I11, I12, t);
+            T I2122 = interpolate1D<T>(t1, t2, I21, I22, t);
+            T I1112_2122 = interpolate1D<T>(r1, r2, I1112, I2122, r);
+
+            return (I1121_1222 + I1112_2122)/2.;
         }
 
         /**
@@ -167,7 +184,7 @@ namespace sns {
             complex<double> *data_cd;
             double *data_d;
 
-            if (p_parameters.bin_axial) {
+            if (p_parameters.bin_axial || p_parameters.bin_axial_all) {
                 // TODO: Add filetype determining {{{
                 if (p_parameters.bin_type == 'c') {
                     file_type = t_complex_double;
@@ -263,73 +280,160 @@ namespace sns {
 
                 fclose(fp);
 
-                // Slice central time layer
-                if (file_type == t_complex_double) {
-                    axdata_cd += nr*((nt-1)/2);
-                } else {
-                    axdata_d += nr*((nt-1)/2);
-                }
+                if (p_parameters.bin_axial) {  // Draw only T=0 cut
+                    // Slice central time layer
+                    if (file_type == t_complex_double) {
+                        axdata_cd += nr*((nt-1)/2);
+                    } else {
+                        axdata_d += nr*((nt-1)/2);
+                    }
 
-                // Convert axial to square
-                double radius = (grid_r[nr-1] + grid_r[nr-2])/2, r = 0;
+                    // Convert axial to square
+                    double radius = (grid_r[nr-1] + grid_r[nr-2])/2, r = 0;
 
-                if (p_parameters.to_width < 0) {
-                    p_parameters.to_width = 2*static_cast<int>( radius / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1;
-                }
-                p_parameters.to_height = p_parameters.to_width;
+                    if (p_parameters.to_width < 0) {
+                        p_parameters.to_width = 2*static_cast<int>( radius / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1;
+                    }
+                    p_parameters.to_height = p_parameters.to_width;
 
-                if (file_type == t_complex_double) {
-                    data = new complex<double>[p_parameters.to_width*p_parameters.to_height];
-                } else {
-                    data = new double[p_parameters.to_width*p_parameters.to_height];
-                }
-                if (!data) {
-                    printf("Cannot allocate memory for data.\n");
-                    delete[] grid_r;
-                    delete[] grid_t;
-                    delete[] axdata;
-                    return NULL;
-                }
-                data_cd = static_cast<complex<double>*>(data);
-                data_d = static_cast<double*>(data);
+                    if (file_type == t_complex_double) {
+                        data = new complex<double>[p_parameters.to_width*p_parameters.to_height];
+                    } else {
+                        data = new double[p_parameters.to_width*p_parameters.to_height];
+                    }
+                    if (!data) {
+                        printf("Cannot allocate memory for data.\n");
+                        delete[] grid_r;
+                        delete[] grid_t;
+                        delete[] axdata;
+                        return NULL;
+                    }
+                    data_cd = static_cast<complex<double>*>(data);
+                    data_d = static_cast<double*>(data);
 
-                // Convert axial to square
-                int k = 0;
-                for (j = 0; j < p_parameters.to_height; j++) {
-                    for (i = 0; i < p_parameters.to_width; i++) {
-                        r = 4*static_cast<double>(
-                                (j-p_parameters.to_height/2)*(j-p_parameters.to_height/2) +
-                                (i-p_parameters.to_height/2)*(i-p_parameters.to_height/2)
-                            ) / p_parameters.to_height/p_parameters.to_height;
-                        r = sqrt(r)*radius;
+                    // Convert axial to square
+                    int k = 0;
+                    for (j = 0; j < p_parameters.to_height; j++) {
+                        for (i = 0; i < p_parameters.to_width; i++) {
+                            r = 4*static_cast<double>(
+                                    (j-p_parameters.to_height/2)*(j-p_parameters.to_height/2) +
+                                    (i-p_parameters.to_height/2)*(i-p_parameters.to_height/2)
+                                ) / p_parameters.to_height/p_parameters.to_height;
+                            r = sqrt(r)*radius;
 
-                        if (r < radius) {
-                            if (r < grid_r[k]) {
-                                for (; k >= 0; k--) {
-                                    if (grid_r[k] <= r && r <= grid_r[k + 1]) {
+                            if (r < radius) {
+                                if (r < grid_r[k]) {
+                                    for (; k >= 0; k--) {
+                                        if (grid_r[k] <= r && r <= grid_r[k + 1]) {
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    for (; k < nr-1; k++) {
+                                        if (grid_r[k] <= r && r <= grid_r[k + 1]) {
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                if (file_type == t_complex_double) {
+                                    data_cd[p_parameters.to_width*j+i] =
+                                        interpolate1D< complex<double> >(grid_r[k], grid_r[k+1], axdata_cd[k], axdata_cd[k+1], r);
+                                } else {
+                                    data_d[p_parameters.to_width*j+i] =
+                                        interpolate1D< double >(grid_r[k], grid_r[k+1], axdata_d[k], axdata_d[k+1], r);
+                                }
+                            } else {
+                                if (file_type == t_complex_double) {
+                                    data_cd[p_parameters.to_width*j+i] = 0;
+                                } else {
+                                    data_d[p_parameters.to_width*j+i] = 0;
+                                }
+                            }
+                        }
+                    }
+                } else {  // Draw all RT plane
+                    if (nt < 3) {
+                        delete[] grid_r;
+                        delete[] grid_t;
+                        delete[] axdata;
+                        return NULL;
+                    }
+
+                    // Convert axial to square
+                    double r0 = (grid_r[nr-1] + grid_r[nr-2])/2, r = 0;
+                    double t0 = (grid_t[nt-1] + grid_r[nt-2])/2, t = 0;
+
+                    if (p_parameters.to_width < 0) {
+                        p_parameters.to_width = 2*static_cast<int>( t0 / sqrt((grid_t[nt-1]-grid_t[nt-2])*(grid_t[static_cast<int>((nt-1)/2)-1]-grid_t[static_cast<int>((nt-1)/2)])) ) + 1;
+                    }
+                    if (p_parameters.to_height < 0) {
+                        p_parameters.to_height = 2*static_cast<int>( r0 / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1;
+                    }
+
+                    if (file_type == t_complex_double) {
+                        data = new complex<double>[p_parameters.to_width*p_parameters.to_height];
+                    } else {
+                        data = new double[p_parameters.to_width*p_parameters.to_height];
+                    }
+                    if (!data) {
+                        printf("Cannot allocate memory for data.\n");
+                        delete[] grid_r;
+                        delete[] grid_t;
+                        delete[] axdata;
+                        return NULL;
+                    }
+                    data_cd = static_cast<complex<double>*>(data);
+                    data_d = static_cast<double*>(data);
+
+                    // Convert axial to square
+                    int k_r = 0, k_t = 0;
+                    for (j = 0; j < p_parameters.to_height/2; j++) {
+                        for (i = 0; i < p_parameters.to_width; i++) {
+                            r = r0 * 2 * static_cast<double>(j) / p_parameters.to_height;
+                            t = t0 * 4 * static_cast<double>(i - p_parameters.to_width/2) / p_parameters.to_width;
+
+                            if (r < grid_r[k_r]) {
+                                for (; k_r >= 0; k_r--) {
+                                    if (grid_r[k_r] <= r && r <= grid_r[k_r + 1]) {
                                         break;
                                     }
                                 }
                             } else {
-                                for (; k < nr-1; k++) {
-                                    if (grid_r[k] <= r && r <= grid_r[k + 1]) {
+                                for (; k_r < nr-1; k_r++) {
+                                    if (grid_r[k_r] <= r && r <= grid_r[k_r + 1]) {
                                         break;
                                     }
                                 }
                             }
-                            
-                            if (file_type == t_complex_double) {
-                                data_cd[p_parameters.to_width*j+i] =
-                                    interpolate< complex<double> >(grid_r[k], axdata_cd[k], grid_r[k+1], axdata_cd[k+1], r);
+
+                            if (t < grid_t[k_t]) {
+                                for (; k_t >= 0; k_t--) {
+                                    if (grid_t[k_t] <= t && t <= grid_t[k_t + 1]) {
+                                        break;
+                                    }
+                                }
                             } else {
-                                data_d[p_parameters.to_width*j+i] =
-                                    interpolate< double >(grid_r[k], axdata_d[k], grid_r[k+1], axdata_d[k+1], r);
+                                for (; k_t < nt-1; k_t++) {
+                                    if (grid_t[k_t] <= t && t <= grid_t[k_t + 1]) {
+                                        break;
+                                    }
+                                }
                             }
-                        } else {
+
                             if (file_type == t_complex_double) {
-                                data_cd[p_parameters.to_width*j+i] = 0;
+                                data_cd[p_parameters.to_width*(p_parameters.to_height/2 + j) + i] =
+                                    interpolate2D< complex<double> >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],
+                                                                      axdata_cd[nr*k_t + k_r], axdata_cd[nr*(k_t+1) + k_r],
+                                                                      axdata_cd[nr*k_t + (k_r+1)], axdata_cd[nr*(k_t+1) + (k_r+1)], r, t);
+                                data_cd[p_parameters.to_width*(p_parameters.to_height/2 - 1 - j) + i] = data_cd[p_parameters.to_width*(p_parameters.to_height/2 + j) + i];
+                                    
                             } else {
-                                data_d[p_parameters.to_width*j+i] = 0;
+                                data_d[p_parameters.to_width*(p_parameters.to_height/2 + j) + i] =
+                                    interpolate2D< double >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],
+                                                             axdata_d[nr*k_t + k_r], axdata_d[nr*(k_t+1) + k_r],
+                                                             axdata_d[nr*k_t + (k_r+1)], axdata_d[nr*(k_t+1) + (k_r+1)], r, t);
+                                data_d[p_parameters.to_width*(p_parameters.to_height/2 - 1 - j) + i] = data_d[p_parameters.to_width*(p_parameters.to_height/2 + j) + i];
                             }
                         }
                     }

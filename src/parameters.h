@@ -18,6 +18,7 @@ namespace sns {
         int bin_height;
         char bin_type;
         bool bin_axial;
+        bool bin_axial_all;
 
         int bin_header;
         int bin_footer;
