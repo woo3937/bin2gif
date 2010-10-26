@@ -30,6 +30,7 @@ namespace sns {
 
         char* to_func;
         double to_amp;
+        bool to_amp_e;
         double to_min;
         double to_max;
         bool to_use_min;

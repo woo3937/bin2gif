@@ -617,9 +617,12 @@ namespace sns {
 
                 d_min = -M_PI;
                 d_max = M_PI;
-            } else if (( p_parameters.to_amp > 0 ) && !(p_parameters.to_use_min || p_parameters.to_use_max )) {
+            } else if (( p_parameters.to_amp > 0 ) && !(p_parameters.to_use_min || p_parameters.to_use_max || p_parameters.to_amp_e)) {
                 d_min = ( (strcmp(p_parameters.to_func, "norm") == 0) || (strcmp(p_parameters.to_func, "abs") == 0) ) ? 0 : -p_parameters.to_amp;
                 d_max = p_parameters.to_amp;
+            } else if(p_parameters.to_amp_e) {
+                d_min = d_min/M_El;
+                d_max = d_max/M_El;
             }
 
             if (p_parameters.to_use_min) {

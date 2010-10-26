@@ -48,6 +48,7 @@ void display_help(const char *argv0) {
     printf("    -t, --type (double|d|complex|c)      type of binary data\n");
     printf("    -f, --func (abs|norm|real|imag|arg)  function for complex to real conversion\n");
     printf("    -a, --amp <double>                   value of image color scale amplitude\n");
+    printf("    -e                                   set amplitude to e^-1\n");
     printf("    --min <double>                       value of image color scale minimum\n");
     printf("    --max <double>                       value of image color scale maximum\n");
     printf("    --reflect                            reflect image, swaps x and y coords\n");
@@ -100,7 +101,7 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
     };
     int option_index = 0;
 
-    while ((c = getopt_long_only(argc, argv, "s:r:t:f:a:hvd", long_options, &option_index)) != -1) {
+    while ((c = getopt_long_only(argc, argv, "s:r:t:f:a:ehvd", long_options, &option_index)) != -1) {
         switch (c) {
             case 0:
                 if (        strcmp(long_options[option_index].name, "reflect") == 0) {
@@ -147,6 +148,9 @@ void get_program_options(int argc, char *argv[], bin2gif_parameters *p_parameter
                 break;
             case 'a':
                 sscanf(optarg, "%lf", &p_parameters->to_amp);
+                break;
+            case 'e':
+                p_parameters->to_amp_e = true;
                 break;
             case '?':
                 printf("Unknown option %d.\n", optopt);
@@ -255,6 +259,7 @@ int main(int argc, char *argv[]) {
 
     p_parameters.to_func = const_cast<char*>("real");
     p_parameters.to_amp = -1;
+    p_parameters.to_amp_e = false;
     p_parameters.to_use_min = false;
     p_parameters.to_use_max = false;
 
