@@ -106,3 +106,6 @@ test: bin2gif ./tests/make_test_files
 	@./bin2gif --force --axial -t double  --func real ./tests/*.adbl
 	@./bin2gif --force --axial -t complex --func norm ./tests/*.acpl
 
+lint:
+	 cpplint ./src/*.cpp ./src/*.h
+

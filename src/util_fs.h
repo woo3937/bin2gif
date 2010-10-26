@@ -1,5 +1,11 @@
-#ifndef SNS_BIN2GIF_UTIL_FS
-#define SNS_BIN2GIF_UTIL_FS
+/*
+Copyright (C) 2009, Oleg Efimov <efimovov@yandex.ru>
+
+See license text in LICENSE file
+*/
+//---------------------------------------------------------------------------
+#ifndef SRC_UTIL_FS_H_
+#define SRC_UTIL_FS_H_
 //---------------------------------------------------------------------------
 #include <sys/stat.h>
 //---------------------------------------------------------------------------
@@ -11,5 +17,5 @@ namespace sns {
     }
 }
 //---------------------------------------------------------------------------
-#endif
+#endif  // SRC_UTIL_FS_H_
 

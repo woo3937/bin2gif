@@ -1,8 +1,10 @@
-/**
-* @file util_fs.cpp
+/*
+Copyright (C) 2009, Oleg Efimov <efimovov@yandex.ru>
+
+See license text in LICENSE file
 */
 //---------------------------------------------------------------------------
-#include "util_fs.h"
+#include "./util_fs.h"
 //---------------------------------------------------------------------------
 namespace sns {
     namespace fs {

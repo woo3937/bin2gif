@@ -1,5 +1,11 @@
-#ifndef SNS_BIN2GIF_PARAMETERS
-#define SNS_BIN2GIF_PARAMETERS
+/*
+Copyright (C) 2009, Oleg Efimov <efimovov@yandex.ru>
+
+See license text in LICENSE file
+*/
+//---------------------------------------------------------------------------
+#ifndef SRC_PARAMETERS_H_
+#define SRC_PARAMETERS_H_
 //---------------------------------------------------------------------------
 namespace sns {
     struct bin2gif_parameters {
@@ -38,5 +44,5 @@ namespace sns {
     };
 }
 //---------------------------------------------------------------------------
-#endif
+#endif  // SRC_PARAMETERS_H_
 
