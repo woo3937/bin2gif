@@ -54,8 +54,6 @@ void display_help(const char *argv0) {
     printf("    --palette <filename>                 color palette filename\n");
     printf("    --axial                              color palette filename\n\n");
 
-    //printf("    --fixphase                           fix 2π jumps in calculated complex arguments \n");
-
     printf("    --header <num>                       size of file header in bytes\n");
     printf("    --footer <num>                       size of file footer in bytes\n");
     printf("    --delete-original                    delete original file after convert\n");
@@ -254,7 +252,6 @@ int main(int argc, char *argv[]) {
     p_parameters.to_width = -1;  // No resize
     p_parameters.to_height = -1; // No resize
     p_parameters.to_reflect = false;
-    p_parameters.to_fixphase = false;
 
     p_parameters.to_func = const_cast<char*>("real");
     p_parameters.to_amp = -1;

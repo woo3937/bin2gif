@@ -600,30 +600,6 @@ namespace sns {
 
             delete[] data;
 
-            /*if ( p_parameters.to_fixphase && ( strcmp(p_parameters.to_func, "arg") == 0 ) ) {
-                for ( j = 0; j < p_parameters.to_height; j++ ) {
-                    for ( i = 0; i < p_parameters.to_width; i++ ) {
-
-                        kk = p_parameters.to_width*j+i;
-                        
-                        if ( i > 0 || j > 0 ) {
-                            if ( i > 0 ) {
-                                ii = p_parameters.to_width*j+i-1;
-                                
-                                while ( ddata[kk] > ddata[ii] + M_PI ) {
-                                    ddata[kk] -= 2*M_PI;
-                                }
-                                while ( ddata[kk] < ddata[ii] + M_PI ) {
-                                    ddata[kk] += 2*M_PI;
-                                }
-                            
-                            }
-                        }
-
-                    }
-                }
-            }*/
-
             int c_color;
 
             double d_max, d_min;
