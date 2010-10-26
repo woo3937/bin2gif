@@ -18,7 +18,7 @@ See license text in LICENSE file
 #include "./util_fs.h"
 #include "./util_visualize.h"
 //---------------------------------------------------------------------------
-#define VERSION "0.4"
+#define VERSION "0.5"
 #define AUTHOR "Oleg Efimov"
 #define BUGREPORT_EMAIL "efimovov@yandex.ru"
 //---------------------------------------------------------------------------
