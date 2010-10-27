@@ -438,17 +438,17 @@ namespace sns {
                             }
 
                             if (file_type == t_complex_double) {
-                                data_cd[p_params->to_width*(p_params->to_height/2 + j) + i] =                                                                // NOLINT
-                                    interpolate2D< std::complex<double> >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],                              // NOLINT
-                                                                      axdata_cd[nr*k_t + k_r], axdata_cd[nr*(k_t+1) + k_r],                                // NOLINT
-                                                                      axdata_cd[nr*k_t + (k_r+1)], axdata_cd[nr*(k_t+1) + (k_r+1)], r, t);                 // NOLINT
-                                data_cd[p_params->to_width*(p_params->to_height/2 - 1 - j) + i] = data_cd[p_params->to_width*(p_params->to_height/2 + j) + i]; // NOLINT
+                                data_cd[p_params->to_width*(p_params->to_height/2 + j) + (p_params->to_width - 1 - i)] =                                 // NOLINT
+                                    interpolate2D< std::complex<double> >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],                       // NOLINT
+                                                                      axdata_cd[nr*k_t + k_r], axdata_cd[nr*(k_t+1) + k_r],                              // NOLINT
+                                                                      axdata_cd[nr*k_t + (k_r+1)], axdata_cd[nr*(k_t+1) + (k_r+1)], r, t);               // NOLINT
+                                data_cd[p_params->to_width*(p_params->to_height/2 - 1 - j) + (p_params->to_width - 1 - i)] = data_cd[p_params->to_width*(p_params->to_height/2 + j) + i]; // NOLINT
                             } else {
-                                data_d[p_params->to_width*(p_params->to_height/2 + j) + i] =                                                               // NOLINT
+                                data_d[p_params->to_width*(p_params->to_height/2 + j) + (p_params->to_width - 1 - i)] =                                  // NOLINT
                                     interpolate2D< double >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],                                     // NOLINT
                                                              axdata_d[nr*k_t + k_r], axdata_d[nr*(k_t+1) + k_r],                                         // NOLINT
                                                              axdata_d[nr*k_t + (k_r+1)], axdata_d[nr*(k_t+1) + (k_r+1)], r, t);                          // NOLINT
-                                data_d[p_params->to_width*(p_params->to_height/2 - 1 - j) + i] = data_d[p_params->to_width*(p_params->to_height/2 + j) + i]; // NOLINT
+                                data_d[p_params->to_width*(p_params->to_height/2 - 1 - j) + (p_params->to_width - 1 - i)] = data_d[p_params->to_width*(p_params->to_height/2 + j) + i]; // NOLINT
                             }
                         }
                     }
