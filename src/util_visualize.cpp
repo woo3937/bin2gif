@@ -509,7 +509,9 @@ namespace sns {
                 }
 
                 if (elements_in_file != bin_count) {
-                    printf("Bad file format or corrupted file, only %ld elements of %d readed.\n", elements_in_file, bin_count); // NOLINT
+                    printf("Error: Bad file format or corrupted file\n");
+                    printf("Only %ld elements of %d readed.\n",
+                           elements_in_file, bin_count);
                     delete[] data;
                     fclose(fp);
                     return NULL;
@@ -521,12 +523,8 @@ namespace sns {
             return data;
         }
 
-        /**
-        *
-        * @return gdImagePtr Image (GD class)
-        */
-        gdImagePtr get_image_from_binary_file(char* filename,
-                                              bin2gif_parameters *p_params) {
+        int convert_binary_file_to_gif(char* filename_bin, char* filename_gif,
+                                       bin2gif_parameters *p_params) {
             gdImagePtr im;
 
             int i = 0, j = 0, ii = 0, jj = 0, kk = 0;
@@ -549,7 +547,7 @@ namespace sns {
             double d_value = 0;
 
             // Read data from file and convert to square matrix
-            void *data = get_data_from_binary_file(filename, p_params);
+            void *data = get_data_from_binary_file(filename_bin, p_params);
             std::complex<double>* data_cd = static_cast<std::complex<double>*>(data); // NOLINT
             double* data_d = static_cast<double*>(data);
 
@@ -588,7 +586,7 @@ namespace sns {
             if (!ddata) {
                 printf("Cannot allocate memory for data.\n");
                 delete[] data;
-                return NULL;
+                return 1;
             }
 
             if (!p_params->to_reflect) {
@@ -603,7 +601,7 @@ namespace sns {
                 printf("Cannot create GD image.\n");
                 delete[] data;
                 delete[] ddata;
-                return NULL;
+                return 1;
             }
 
             for (j = 0; j < p_params->to_height; j++) {
@@ -635,7 +633,6 @@ namespace sns {
                     }
                 }
             }
-
 
             int c_color;
             double d_max, d_min;
@@ -705,18 +702,6 @@ namespace sns {
             }
 
             delete[] ddata;
-
-            return im;
-        }
-
-        int convert_binary_file_to_gif(char* filename_bin, char* filename_gif,
-                                       bin2gif_parameters *p_params) {
-            gdImagePtr im =
-                         get_image_from_binary_file(filename_bin, p_params);
-
-            if (!im) {
-                return 1;
-            }
 
             FILE *fp = fopen(filename_gif, "wb");
 
