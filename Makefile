@@ -57,7 +57,7 @@ bin2gif-static: main.o util_visualize.o util_fs.o
 main.o: ./src/main.cpp ./src/parameters.h
 	$(CXX) $(OPENMP_FLAG) -c ./src/main.cpp $(INCLUDES) $(CFLAGS)
 
-util_visualize.o: ./src/util_visualize.cpp ./src/util_visualize.h
+util_visualize.o: ./src/util_visualize.cpp ./src/util_visualize.h ./src/parameters.h
 	$(CXX) $(OPENMP_FLAG) -c ./src/util_visualize.cpp $(INCLUDES) $(CFLAGS)
 
 util_fs.o: ./src/util_fs.cpp ./src/util_fs.h
