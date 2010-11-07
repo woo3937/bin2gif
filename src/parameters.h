@@ -28,6 +28,8 @@ namespace sns {
         bool verbose;
         bool force;
 
+        bool export_text;
+
         int bin_width;
         int bin_height;
         char bin_type;

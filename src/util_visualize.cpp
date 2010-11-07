@@ -628,6 +628,15 @@ namespace sns {
 
             delete[] data;
 
+            if (p_params->export_text) {
+                for (j = 0; j < p_params->to_height; j++) {
+                    for (i = 0; i < p_params->to_width; i++) {
+                        printf("%d  %d  %lf\n", i, j, ddata[p_params->to_width*j+i]);
+                    }
+                }
+            }
+
+
             int c_color;
             double d_max, d_min;
 
