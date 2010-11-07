@@ -8,6 +8,7 @@ See license text in LICENSE file
 #define SRC_UTIL_VISUALIZE_H_
 //---------------------------------------------------------------------------
 #include <gd.h>
+#include <mgl/mgl_zb.h>
 //---------------------------------------------------------------------------
 #include <complex>
 #include <cstring>

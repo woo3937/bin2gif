@@ -16,7 +16,7 @@ else
 	OPENMP_FLAG = -fopenmp
 endif
 
-LIBS = -lgd -lm
+LIBS = -lgd -lmgl -lm
 
 # Host specific variables
 HOSTNAME = $(shell hostname)
@@ -24,12 +24,14 @@ HOSTNAME = $(shell hostname)
 ifeq ($(HOSTNAME),ktg1.phys.msu.ru)
 	HOSTTITLE = ILC MSU cluster
 	LIBS_STATIC += /usr/lib/libgd.a
+	LIBS_STATIC += /usr/lib/libmgl.a
 else
 	ifeq ($(HOSTNAME),t60-2.parallel.ru)
 		HOSTTITLE = SKIF MSU cluster
 		INCLUDES += -I/home/$(USER)/local/include
 		LIBS += -L/home/$(USER)/local/lib
 		LIBS_STATIC += /home/$(USER)/local/lib/libgd.a
+		LIBS_STATIC += /home/$(USER)/local/lib/libmgl.a
 	else
 		HOSTTITLE = your PC
 	endif

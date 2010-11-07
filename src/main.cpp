@@ -59,6 +59,7 @@ void display_help(const char *argv0) {
     printf("    --reflect                            reflect image, swaps x and y coords\n"); // NOLINT
     printf("    --palette <filename>                 color palette filename\n");
     printf("    --axial                              color palette filename\n"); // NOLINT
+    printf("    --mathgl                             use MathGL to draw image\n"); // NOLINT
     printf("    --text                               export data as TSV text file\n\n"); // NOLINT
 
     printf("    --header <num>                       size of file header in bytes\n"); // NOLINT
@@ -95,6 +96,7 @@ void get_program_options(int argc, char *argv[],
         {"axial", no_argument, NULL, 0},
         {"axial-all", no_argument, NULL, 0},
         {"text", no_argument, NULL, 0},
+        {"mathgl", no_argument, NULL, 0},
 
         {"header", required_argument, NULL, 0},
         {"footer", required_argument, NULL, 0},
@@ -121,6 +123,8 @@ void get_program_options(int argc, char *argv[],
                     p_params->bin_axial_all = true;
                 } else if (strcmp(loptions[oindex].name, "text") == 0) {
                     p_params->export_text = true;
+                } else if (strcmp(loptions[oindex].name, "mathgl") == 0) {
+                    p_params->use_mathgl = true;
                 } else if (strcmp(loptions[oindex].name, "palette") == 0) {
                     p_params->palette_file = optarg;
                 } else if (strcmp(loptions[oindex].name, "delete-original") == 0) { // NOLINT
@@ -263,6 +267,7 @@ int main(int argc, char *argv[]) {
     p_params.bin_axial = false;      // Standart square matrix
     p_params.bin_axial_all = false;  // Standart square matrix
     p_params.export_text = false;
+    p_params.use_mathgl = false;
 
 
     p_params.bin_header = 0;

@@ -29,13 +29,18 @@ namespace sns {
         bool force;
 
         bool export_text;
+        bool use_mathgl;
 
         int bin_width;
         int bin_height;
         char bin_type;
         binary_file_type file_type;
+
         bool bin_axial;
         bool bin_axial_all;
+        double st;
+        double sr;
+
 
         int bin_header;
         int bin_footer;

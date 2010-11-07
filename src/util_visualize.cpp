@@ -350,14 +350,15 @@ namespace sns {
                     }
 
                     // Convert axial to square
-                    double r0 = (grid_r[nr-1] + grid_r[nr-2])/2, r = 0;
-                    double t0 = (grid_t[nt-1] + grid_r[nt-2])/2, t = 0;
+                    p_params->sr = (grid_r[nr-1] + grid_r[nr-2])/2;
+                    p_params->st = (grid_t[nt-1] + grid_r[nt-2])/2;
+                    double r = 0, t = 0;
 
                     if (p_params->to_width < 0) {
-                        p_params->to_width = 2*static_cast<int>( t0 / sqrt((grid_t[nt-1]-grid_t[nt-2])*(grid_t[static_cast<int>((nt-1)/2)-1]-grid_t[static_cast<int>((nt-1)/2)])) ) + 1; // NOLINT
+                        p_params->to_width = 2*static_cast<int>( p_params->st / sqrt((grid_t[nt-1]-grid_t[nt-2])*(grid_t[static_cast<int>((nt-1)/2)-1]-grid_t[static_cast<int>((nt-1)/2)])) ) + 1; // NOLINT
                     }
                     if (p_params->to_height < 0) {
-                        p_params->to_height = 2*static_cast<int>( r0 / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1; // NOLINT
+                        p_params->to_height = 2*static_cast<int>( p_params->sr / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1; // NOLINT
                     }
 
                     if (p_params->file_type == t_complex_double) {
@@ -379,8 +380,8 @@ namespace sns {
                     int k_r = 0, k_t = 0;
                     for (j = 0; j < p_params->to_height/2; j++) {
                         for (i = 0; i < p_params->to_width; i++) {
-                            r = r0 * 2 * static_cast<double>(j) / p_params->to_height; // NOLINT
-                            t = t0 * 4 * static_cast<double>(i - p_params->to_width/2) / p_params->to_width; // NOLINT
+                            r = p_params->sr * 2 * static_cast<double>(j) / p_params->to_height; // NOLINT
+                            t = p_params->st * 4 * static_cast<double>(i - p_params->to_width/2) / p_params->to_width; // NOLINT
 
                             if (r < grid_r[k_r]) {
                                 for (; k_r >= 0; k_r--) {
@@ -634,8 +635,7 @@ namespace sns {
                 }
             }
 
-            int c_color;
-            double d_max, d_min;
+            double d_min, d_max;
 
             d_min = *std::min_element(ddata,
                                 ddata + p_params->to_width*p_params->to_height);
@@ -683,39 +683,72 @@ namespace sns {
             }
             // Debug }}}
 
-            for (j = 0; j < p_params->to_height; j++) {
-                for (i = 0; i < p_params->to_width; i++) {
-                    c_color = static_cast<int>(255*(ddata[p_params->to_width*j+i]-d_min)/(d_max-d_min)); // NOLINT
-                    c_color = (c_color > 255) ? 255
-                                              : ((c_color < 0) ? 0
-                                                               : c_color);
-                    c_color = gdImageColorAllocate(im, palette[c_color][0],
-                                                       palette[c_color][1],
-                                                       palette[c_color][2]);
+            if (p_params->use_mathgl) {
+                mglData md;
 
-                    if (!p_params->to_reflect) {
-                        gdImageSetPixel(im, i, j, c_color);
-                    } else {
-                        gdImageSetPixel(im, j, i, c_color);
+                // if (p_params->bin_axial || p_params->bin_axial_all) {
+                if (p_params->bin_axial_all) {
+                    md.Create(p_params->to_width, p_params->to_height);
+                    for (j = 0; j < p_params->to_height; j++) {
+                        for (i = 0; i < p_params->to_width; i++) {
+                            md.a[p_params->to_width*j+i] =
+                                                  ddata[p_params->to_width*j+i];
+                        }
                     }
                 }
-            }
 
-            delete[] ddata;
+                mglGraphZB mgr(800, 600);
+                mgr.Rotate(60, -20);
+                if (p_params->bin_axial_all || p_params->bin_axial_all) {
+                    mgr.SetRanges (-p_params->sr, p_params->sr,
+                                   -p_params->st, p_params->st,
+                                   d_min, d_max);
+                }
+                mgr.AdjustTicks();
+                mgr.Label('x', "t", 0);
+                mgr.Label('y', "r", 0);
+                mgr.Surf(md);
+                //mgr.Cont(md, "y");
+                mgr.Axis();
+                //mgr.Box();
+                mgr.WriteGIF(filename_gif);
+            } else { // Use GD for render plain image
+                int c_color;
 
-            FILE *fp = fopen(filename_gif, "wb");
+                for (j = 0; j < p_params->to_height; j++) {
+                    for (i = 0; i < p_params->to_width; i++) {
+                        c_color = static_cast<int>(255*(ddata[p_params->to_width*j+i]-d_min)/(d_max-d_min)); // NOLINT
+                        c_color = (c_color > 255) ? 255
+                                                  : ((c_color < 0) ? 0
+                                                                   : c_color);
+                        c_color = gdImageColorAllocate(im, palette[c_color][0],
+                                                           palette[c_color][1],
+                                                           palette[c_color][2]);
 
-            if (!fp) {
-                printf("Cannot open output file %s for writing.\n",
-                       filename_gif);
+                        if (!p_params->to_reflect) {
+                            gdImageSetPixel(im, i, j, c_color);
+                        } else {
+                            gdImageSetPixel(im, j, i, c_color);
+                        }
+                    }
+                }
+
+                delete[] ddata;
+
+                FILE *fp = fopen(filename_gif, "wb");
+
+                if (!fp) {
+                    printf("Cannot open output file %s for writing.\n",
+                           filename_gif);
+                    gdImageDestroy(im);
+                    return 1;
+                }
+
+                gdImageGif(im, fp);
+
+                fclose(fp);
                 gdImageDestroy(im);
-                return 1;
             }
-
-            gdImageGif(im, fp);
-
-            fclose(fp);
-            gdImageDestroy(im);
 
             return 0;
         }
