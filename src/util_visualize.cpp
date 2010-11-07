@@ -28,14 +28,6 @@ namespace sns {
         }
 
         /**
-        * Enumerate for binary file types
-        */
-        enum binary_file_type {
-            t_double,              // double binary data
-            t_complex_double       // std::complex<double> binary data
-        };
-
-        /**
         * Interpolate value by one coordinate
         */
         template<typename T>
@@ -161,33 +153,14 @@ namespace sns {
             }
         }
 
-        /**
-        *
-        * @return gdImagePtr Image (GD class)
-        */
-        gdImagePtr get_image_from_binary_file(char* filename,
-                                              bin2gif_parameters *p_params) {
-            gdImagePtr im;
+        void* get_data_from_binary_file(char* filename,
+                                        bin2gif_parameters *p_params) {
             FILE* fp = NULL;
 
-            int i = 0, j = 0, ii = 0, jj = 0, kk = 0;
-            int n = 0, factor_x = 1, factor_y = 1;
+            int i = 0, j = 0;
+            int n = 0;
 
-            double (*func)(const std::complex<double>&) = std::abs;
-
-            if (       strcmp(p_params->to_func, "amp") == 0) { // NOLINT
-                func = std::abs;
-            } else if (strcmp(p_params->to_func, "norm") == 0) {
-                func = std::norm;
-            } else if (strcmp(p_params->to_func, "real") == 0) {
-                func = sns::visual::real;
-            } else if (strcmp(p_params->to_func, "imag") == 0) {
-                func = sns::visual::imag;
-            } else if (strcmp(p_params->to_func, "arg") == 0) {
-                func = std::arg;
-            }
-
-            binary_file_type file_type = t_complex_double;
+            p_params->file_type = t_complex_double;
             off_t file_size, elements_in_file;
             void *data;
             std::complex<double> *data_cd;
@@ -196,9 +169,9 @@ namespace sns {
             if (p_params->bin_axial || p_params->bin_axial_all) {
                 // TODO(Sannis): Add filetype determining {{{
                 if (p_params->bin_type == 'c') {
-                    file_type = t_complex_double;
+                    p_params->file_type = t_complex_double;
                 } else if (p_params->bin_type == 'd') {
-                    file_type = t_double;
+                    p_params->file_type = t_double;
                 } else {
                     return NULL;
                 }
@@ -263,7 +236,7 @@ namespace sns {
                 }
 
                 void *axdata;
-                if (file_type == t_complex_double) {
+                if (p_params->file_type == t_complex_double) {
                     axdata = new std::complex<double>[nr*nt];
                 } else {
                     axdata = new double[nr*nt];
@@ -278,7 +251,7 @@ namespace sns {
                 std::complex<double> *axdata_cd = static_cast<std::complex<double>*>(axdata); // NOLINT
                 double *axdata_d = static_cast<double*>(axdata);
 
-                if (file_type == t_complex_double) {
+                if (p_params->file_type == t_complex_double) {
                     elements_in_file = fread(axdata, sizeof(std::complex<double>),
                                              nr*nt, fp);
                 } else {
@@ -286,7 +259,7 @@ namespace sns {
                                              nr*nt, fp);
                 }
                 if (elements_in_file != nr*nt) {
-                    printf("Cannot read axial data from file %s. Read %d %s elements, but %d expected.\n", filename, elements_in_file, (file_type == t_complex_double) ? "double" : "std::complex", nr*nt); // NOLINT
+                    printf("Cannot read axial data from file %s. Read %d %s elements, but %d expected.\n", filename, elements_in_file, (p_params->file_type == t_complex_double) ? "double" : "std::complex", nr*nt); // NOLINT
                     delete[] grid_r;
                     delete[] grid_t;
                     delete[] axdata;
@@ -298,7 +271,7 @@ namespace sns {
 
                 if (p_params->bin_axial) {  // Draw only T=0 cut
                     // Slice central time layer
-                    if (file_type == t_complex_double) {
+                    if (p_params->file_type == t_complex_double) {
                         axdata_cd += nr*((nt-1)/2);
                     } else {
                         axdata_d += nr*((nt-1)/2);
@@ -312,7 +285,7 @@ namespace sns {
                     }
                     p_params->to_height = p_params->to_width;
 
-                    if (file_type == t_complex_double) {
+                    if (p_params->file_type == t_complex_double) {
                         data = new std::complex<double>[p_params->to_width*p_params->to_height]; // NOLINT
                     } else {
                         data = new double[p_params->to_width*p_params->to_height]; // NOLINT
@@ -352,7 +325,7 @@ namespace sns {
                                     }
                                 }
 
-                                if (file_type == t_complex_double) {
+                                if (p_params->file_type == t_complex_double) {
                                     data_cd[p_params->to_width*j+i] =
                                         interpolate1D< std::complex<double> >(grid_r[k], grid_r[k+1], axdata_cd[k], axdata_cd[k+1], r); // NOLINT
                                 } else {
@@ -360,7 +333,7 @@ namespace sns {
                                         interpolate1D< double >(grid_r[k], grid_r[k+1], axdata_d[k], axdata_d[k+1], r); // NOLINT
                                 }
                             } else {
-                                if (file_type == t_complex_double) {
+                                if (p_params->file_type == t_complex_double) {
                                     data_cd[p_params->to_width*j+i] = 0;
                                 } else {
                                     data_d[p_params->to_width*j+i] = 0;
@@ -387,7 +360,7 @@ namespace sns {
                         p_params->to_height = 2*static_cast<int>( r0 / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1; // NOLINT
                     }
 
-                    if (file_type == t_complex_double) {
+                    if (p_params->file_type == t_complex_double) {
                         data = new std::complex<double>[p_params->to_width*p_params->to_height]; // NOLINT
                     } else {
                         data = new double[p_params->to_width*p_params->to_height]; // NOLINT
@@ -437,18 +410,18 @@ namespace sns {
                                 }
                             }
 
-                            if (file_type == t_complex_double) {
+                            if (p_params->file_type == t_complex_double) {
                                 data_cd[p_params->to_width*(p_params->to_height/2 + j) + (p_params->to_width - 1 - i)] =                                 // NOLINT
                                     interpolate2D< std::complex<double> >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],                       // NOLINT
                                                                       axdata_cd[nr*k_t + k_r], axdata_cd[nr*(k_t+1) + k_r],                              // NOLINT
                                                                       axdata_cd[nr*k_t + (k_r+1)], axdata_cd[nr*(k_t+1) + (k_r+1)], r, t);               // NOLINT
-                                data_cd[p_params->to_width*(p_params->to_height/2 - 1 - j) + (p_params->to_width - 1 - i)] = data_cd[p_params->to_width*(p_params->to_height/2 + j) + i]; // NOLINT
+                                data_cd[p_params->to_width*(p_params->to_height/2 - 1 - j) + (p_params->to_width - 1 - i)] = data_cd[p_params->to_width*(p_params->to_height/2 + j) + (p_params->to_width - 1 - i)]; // NOLINT
                             } else {
                                 data_d[p_params->to_width*(p_params->to_height/2 + j) + (p_params->to_width - 1 - i)] =                                  // NOLINT
                                     interpolate2D< double >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],                                     // NOLINT
                                                              axdata_d[nr*k_t + k_r], axdata_d[nr*(k_t+1) + k_r],                                         // NOLINT
                                                              axdata_d[nr*k_t + (k_r+1)], axdata_d[nr*(k_t+1) + (k_r+1)], r, t);                          // NOLINT
-                                data_d[p_params->to_width*(p_params->to_height/2 - 1 - j) + (p_params->to_width - 1 - i)] = data_d[p_params->to_width*(p_params->to_height/2 + j) + i]; // NOLINT
+                                data_d[p_params->to_width*(p_params->to_height/2 - 1 - j) + (p_params->to_width - 1 - i)] = data_d[p_params->to_width*(p_params->to_height/2 + j) + (p_params->to_width - 1 - i)]; // NOLINT
                             }
                         }
                     }
@@ -457,8 +430,6 @@ namespace sns {
                 // Temp hack
                 p_params->bin_width = p_params->to_width;
                 p_params->bin_height = p_params->to_height;
-                factor_x = 1;
-                factor_y = 1;
 
                 delete[] axdata;
             } else {  // Standart square matrix
@@ -476,7 +447,7 @@ namespace sns {
                     elements_in_file = file_size / sizeof(std::complex<double>);
                     n = static_cast<off_t>(sqrt(static_cast<double>(elements_in_file))); // NOLINT
                     if (elements_in_file != n*n) {
-                        file_type = t_double;
+                        p_params->file_type = t_double;
                         elements_in_file = file_size / sizeof(double);
                         n = static_cast<off_t>(sqrt(static_cast<double>(elements_in_file))); // NOLINT
                     }
@@ -505,10 +476,7 @@ namespace sns {
                     p_params->to_height = p_params->bin_height;
                 }
 
-                factor_x = p_params->bin_width/p_params->to_width;
-                factor_y = p_params->bin_height/p_params->to_height;
-
-                if (file_type == t_complex_double) {
+                if (p_params->file_type == t_complex_double) {
                     data = new std::complex<double>[bin_count];
                 } else {
                     data = new double[bin_count];
@@ -531,8 +499,9 @@ namespace sns {
 
                 fseek(fp, p_params->bin_header, SEEK_SET);
 
-                if (file_type == t_complex_double) {
-                    elements_in_file = fread(data, sizeof(std::complex<double>),
+                if (p_params->file_type == t_complex_double) {
+                    elements_in_file = fread(data,
+                                             sizeof(std::complex<double>),
                                              bin_count, fp);
                 } else {
                     elements_in_file = fread(data, sizeof(double),
@@ -547,7 +516,45 @@ namespace sns {
                 }
 
                 fclose(fp);
-            }  // Data loaded
+            }
+
+            return data;
+        }
+
+        /**
+        *
+        * @return gdImagePtr Image (GD class)
+        */
+        gdImagePtr get_image_from_binary_file(char* filename,
+                                              bin2gif_parameters *p_params) {
+            gdImagePtr im;
+
+            int i = 0, j = 0, ii = 0, jj = 0, kk = 0;
+            int factor_x = 1, factor_y = 1;
+
+            double (*func)(const std::complex<double>&) = std::abs;
+
+            if (       strcmp(p_params->to_func, "amp") == 0) { // NOLINT
+                func = std::abs;
+            } else if (strcmp(p_params->to_func, "norm") == 0) {
+                func = std::norm;
+            } else if (strcmp(p_params->to_func, "real") == 0) {
+                func = sns::visual::real;
+            } else if (strcmp(p_params->to_func, "imag") == 0) {
+                func = sns::visual::imag;
+            } else if (strcmp(p_params->to_func, "arg") == 0) {
+                func = std::arg;
+            }
+
+            double d_value = 0;
+
+            // Read data from file and convert to square matrix
+            void *data = get_data_from_binary_file(filename, p_params);
+            std::complex<double>* data_cd = static_cast<std::complex<double>*>(data); // NOLINT
+            double* data_d = static_cast<double*>(data);
+
+            factor_x = p_params->bin_width/p_params->to_width;
+            factor_y = p_params->bin_height/p_params->to_height;
 
             // Debug {{{
             if (p_params->debug) {
@@ -562,13 +569,13 @@ namespace sns {
                 printf("factor_x: %d\n", factor_x);
                 printf("factor_y: %d\n", factor_y);
 
-                if (file_type == t_complex_double) {
-                    printf("file_type: std::complex<double>\n");
+                if (p_params->file_type == t_complex_double) {
+                    printf("p_params->file_type: std::complex<double>\n");
                 } else {
-                    printf("file_type: double\n");
+                    printf("p_params->file_type: double\n");
                 }
 
-                if (file_type == t_complex_double) {
+                if (p_params->file_type == t_complex_double) {
                     printf("func: %s\n", p_params->to_func);
                 }
 
@@ -576,7 +583,7 @@ namespace sns {
             }
             // Debug }}}
 
-            double *ddata = new double[p_params->to_width*p_params->to_height];
+            double *ddata = new double[p_params->to_width*p_params->to_height]; // NOLINT
 
             if (!ddata) {
                 printf("Cannot allocate memory for data.\n");
@@ -599,7 +606,6 @@ namespace sns {
                 return NULL;
             }
 
-            double d_value = 0;
             for (j = 0; j < p_params->to_height; j++) {
                 for (i = 0; i < p_params->to_width; i++) {
                     d_value = 0;
@@ -608,7 +614,7 @@ namespace sns {
                         for (ii = 0; ii < factor_x; ii++) {
                             kk = p_params->bin_width*(factor_y*j + jj) +
                                                     (factor_x*i + ii);
-                            if (file_type == t_complex_double) {
+                            if (p_params->file_type == t_complex_double) {
                                 d_value += func(data_cd[kk]);
                             } else {
                                 d_value += data_d[kk];
@@ -674,8 +680,12 @@ namespace sns {
             for (j = 0; j < p_params->to_height; j++) {
                 for (i = 0; i < p_params->to_width; i++) {
                     c_color = static_cast<int>(255*(ddata[p_params->to_width*j+i]-d_min)/(d_max-d_min)); // NOLINT
-                    c_color = (c_color > 255) ? 255 : ((c_color < 0) ? 0 : c_color); // NOLINT
-                    c_color = gdImageColorAllocate(im, palette[c_color][0], palette[c_color][1], palette[c_color][2]); // NOLINT
+                    c_color = (c_color > 255) ? 255
+                                              : ((c_color < 0) ? 0
+                                                               : c_color);
+                    c_color = gdImageColorAllocate(im, palette[c_color][0],
+                                                       palette[c_color][1],
+                                                       palette[c_color][2]);
 
                     if (!p_params->to_reflect) {
                         gdImageSetPixel(im, i, j, c_color);

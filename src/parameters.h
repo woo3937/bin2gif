@@ -8,6 +8,14 @@ See license text in LICENSE file
 #define SRC_PARAMETERS_H_
 //---------------------------------------------------------------------------
 namespace sns {
+    /**
+    * Enumerate for binary file types
+    */
+    enum binary_file_type {
+        t_double,              // double binary data
+        t_complex_double       // std::complex<double> binary data
+    };
+
     struct bin2gif_parameters {
         unsigned int file_patterns_count;
         char** file_patterns;
@@ -23,6 +31,7 @@ namespace sns {
         int bin_width;
         int bin_height;
         char bin_type;
+        binary_file_type file_type;
         bool bin_axial;
         bool bin_axial_all;
 
