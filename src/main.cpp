@@ -18,9 +18,9 @@ See license text in LICENSE file
 #include "./util_fs.h"
 #include "./util_visualize.h"
 //---------------------------------------------------------------------------
-#define VERSION "0.5"
-#define AUTHOR "Oleg Efimov"
-#define BUGREPORT_EMAIL "efimovov@yandex.ru"
+#define BIN2GIF_VERSION "0.5"
+#define BIN2GIF_AUTHOR "Oleg Efimov"
+#define BIN2GIF_BUGREPORT_EMAIL "efimovov@yandex.ru"
 //---------------------------------------------------------------------------
 const char* get_program_name(const char *argv0) {
     char* ch = strrchr(const_cast<char*>(argv0), '/');
@@ -32,12 +32,12 @@ const char* get_program_name(const char *argv0) {
 }
 //---------------------------------------------------------------------------
 void display_version(const char *argv0) {
-    printf("%s version %s\n", get_program_name(argv0), VERSION);
+    printf("%s version %s\n", get_program_name(argv0), BIN2GIF_VERSION);
     printf("Utility to convert binary 2D data file into GIF images.\n");
     printf("Supports 'double' and 'complex<double>' C/C++ data types.\n");
 
-    printf("\nAuthor: %s.\n", AUTHOR);
-    printf("Report bugs to <%s>.\n", BUGREPORT_EMAIL);
+    printf("\nAuthor: %s.\n", BIN2GIF_AUTHOR);
+    printf("Report bugs to <%s>.\n", BIN2GIF_BUGREPORT_EMAIL);
 }
 //---------------------------------------------------------------------------
 void display_help(const char *argv0) {
