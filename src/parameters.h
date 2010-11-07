@@ -9,7 +9,7 @@ See license text in LICENSE file
 //---------------------------------------------------------------------------
 namespace sns {
     struct bin2gif_parameters {
-        int file_patterns_count;
+        unsigned int file_patterns_count;
         char** file_patterns;
 
         char* palette_file;

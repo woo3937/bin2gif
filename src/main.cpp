@@ -193,7 +193,7 @@ void process_file(char *filename_bin, sns::bin2gif_parameters *p_params) {
         return;
     } else if (strstr(filename_bin, ".gif") != NULL) {
         if (p_params->verbose) {
-            // rintf("File %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin); // NOLINT
+            // printf("File %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin); // NOLINT
         }
         return;
     }
@@ -229,7 +229,7 @@ void process_file(char *filename_bin, sns::bin2gif_parameters *p_params) {
 }
 //---------------------------------------------------------------------------
 int main(int argc, char *argv[]) {
-    int i = 0, j = 0;
+    unsigned int i = 0, j = 0;
 
     char *filename_bin = new char[1024];
     if (!filename_bin) {
@@ -337,7 +337,7 @@ int main(int argc, char *argv[]) {
 
                 printf("Processing %s:\n", globbuf.gl_pathv[j]);
 
-                while (de = readdir(dp)) { // NOLINT
+                while ((de = readdir(dp))) {
                     snprintf(filename_bin, sizeof(filename_bin),
                              "%s", globbuf.gl_pathv[j]);
                     if (filename_bin[strlen(filename_bin)-1] != '/') {
