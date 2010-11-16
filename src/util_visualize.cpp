@@ -702,6 +702,12 @@ namespace sns {
 
 
                 if (p_params->bin_axial_all) {
+                    p_params->sr = static_cast<int>(p_params->sr + 0.5);
+                    p_params->st = static_cast<int>(p_params->st + 0.5);
+
+                    // TODO: Fix d_min
+                    d_max = static_cast<int>(d_max + 0.5);
+
                     mgr.SetRanges (-p_params->sr, p_params->sr,
                                    -p_params->st, p_params->st,
                                    d_min, d_max);
