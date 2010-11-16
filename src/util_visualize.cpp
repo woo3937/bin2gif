@@ -699,7 +699,7 @@ namespace sns {
 
                 mglGraphZB mgr(800, 600);
                 mgr.Rotate(60, -20);
-                if (p_params->bin_axial_all || p_params->bin_axial_all) {
+                if (p_params->bin_axial_all) {
                     mgr.SetRanges (-p_params->sr, p_params->sr,
                                    -p_params->st, p_params->st,
                                    d_min, d_max);
