@@ -22,20 +22,28 @@ LIBS = -lgd -lmgl -lm
 HOSTNAME = $(shell hostname)
 
 ifeq ($(HOSTNAME),ktg1.phys.msu.ru)
-	HOSTTITLE = ILC MSU cluster
+	HOSTTITLE = "ILC MSU cluster"
 	INCLUDES += -I/opt/mathgl/include
 	LIBS += -L/opt/mathgl/lib
 	LIBS_STATIC += /usr/lib/libgd.a
 	LIBS_STATIC += /opt/mathgl/lib/libmgl.a
 else
 	ifeq ($(HOSTNAME),t60-2.parallel.ru)
-		HOSTTITLE = SKIF MSU cluster
+		HOSTTITLE = "SKIF MSU cluster"
 		INCLUDES += -I/home/$(USER)/local/include
 		LIBS += -L/home/$(USER)/local/lib
 		LIBS_STATIC += /home/$(USER)/local/lib/libgd.a
 		LIBS_STATIC += /home/$(USER)/local/lib/libmgl.a
 	else
-		HOSTTITLE = your PC
+		ifeq ($(HOSTNAME),efimovov-pc)
+			HOSTTITLE = "Oleg's PC"
+			INCLUDES += -I/home/$(USER)/local/include
+			LIBS += -L/home/$(USER)/local/lib
+			LIBS_STATIC += /home/$(USER)/local/lib/libmgl.a
+		else
+			HOSTTITLE = "your PC"
+			INCLUDES += -I/home/$(USER)/local/include
+		endif
 	endif
 endif
 
