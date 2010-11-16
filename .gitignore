@@ -13,6 +13,7 @@ make_test_files
 *.adbl
 *.acpl
 *.gif
+*.png
 # Ignore PBS and CLEO log files
 machinefile*
 *.out-*
