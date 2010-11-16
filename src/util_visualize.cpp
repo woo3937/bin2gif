@@ -697,20 +697,35 @@ namespace sns {
                     }
                 }
 
-                mglGraphZB mgr(800, 600);
-                mgr.Rotate(60, -20);
+                mglGraphZB mgr(2048, 1024);
+                mgr.SetCut(false);
+
+
                 if (p_params->bin_axial_all) {
                     mgr.SetRanges (-p_params->sr, p_params->sr,
                                    -p_params->st, p_params->st,
                                    d_min, d_max);
                 }
-                mgr.AdjustTicks();
+
+                //mgr.Light(true);
+                //mgr.Light(0, mglPoint(0, 0, 1));
+                //mgr.AdjustTicks();
+                //mgr.Colorbar();
+
+                mgr.SubPlot(2, 1, 0);
+                //mgr.Aspect(p_params->sr, p_params->st, 1);
+                mgr.Surf(md);
+                mgr.Axis();
                 mgr.Label('x', "t", 0);
                 mgr.Label('y', "r", 0);
+
+                mgr.SubPlot(2, 1, 1);
+                mgr.Rotate(60, -20);
                 mgr.Surf(md);
-                //mgr.Cont(md, "y");
                 mgr.Axis();
-                //mgr.Box();
+                mgr.Label('x', "t", 0);
+                mgr.Label('y', "r", 0);
+                
                 mgr.WritePNG(filename_image);
             } else { // Use GD for render plain image
                 int c_color;
