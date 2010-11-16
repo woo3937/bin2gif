@@ -199,31 +199,31 @@ void process_file(char *filename_bin, sns::bin2gif_parameters *p_params) {
             // printf("Directory %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin); // NOLINT
         }
         return;
-    } else if (strstr(filename_bin, ".gif") != NULL) {
+    } else if (strstr(filename_bin, p_params->use_mathgl ? ".png" : ".gif") != NULL) {
         if (p_params->verbose) {
             // printf("File %s: \033[90G\033[1;33m[Skipped]\033[0m\n", filename_bin); // NOLINT
         }
         return;
     }
-    char filename_gif[1024];
+    char filename_image[1024];
     char filename_type_fix[32];
     snprintf(filename_type_fix, sizeof(filename_type_fix),
-             "_%s.gif", p_params->to_func);
+             "_%s.%s", p_params->to_func, p_params->use_mathgl ? "png" : "gif");
     char* ch;
 
-    filename_gif[0] = '\0';
+    filename_image[0] = '\0';
     ch = strrchr(filename_bin, '.');
-    strncat(filename_gif, filename_bin, ch - filename_bin);
+    strncat(filename_image, filename_bin, ch - filename_bin);
 
-    strncat(filename_gif, filename_type_fix, sizeof(filename_type_fix));
+    strncat(filename_image, filename_type_fix, sizeof(filename_type_fix));
 
     printf("File %s:\n", filename_bin);
 
-    if (sns::fs::file_exists(filename_gif) && !p_params->force) {
+    if (sns::fs::file_exists(filename_image) && !p_params->force) {
         // printf("\033[90G\033[0;33m[GIF file already exists]\033[0m\n");
-    } else if (sns::visual::convert_binary_file_to_gif(filename_bin, filename_gif,
+    } else if (sns::visual::convert_binary_file_to_gif(filename_bin, filename_image,
                                                    p_params) == 0) {
-        printf("  -> %s\n", filename_gif);
+        printf("  -> %s\n", filename_image);
         // printf("\033[90G\033[0;32m[Done]\033[0m\n");
 
         if (p_params->delete_original) {

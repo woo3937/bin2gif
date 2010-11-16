@@ -21,7 +21,7 @@ See license text in LICENSE file
 namespace sns {
     namespace visual {
         void init_color_palette(char* filename);
-        int convert_binary_file_to_gif(char* filename_bin, char* filename_gif,
+        int convert_binary_file_to_gif(char* filename_bin, char* filename_image,
                                        bin2gif_parameters *p_params);
     }
 }

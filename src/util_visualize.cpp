@@ -524,7 +524,7 @@ namespace sns {
             return data;
         }
 
-        int convert_binary_file_to_gif(char* filename_bin, char* filename_gif,
+        int convert_binary_file_to_gif(char* filename_bin, char* filename_image,
                                        bin2gif_parameters *p_params) {
             gdImagePtr im;
 
@@ -711,7 +711,7 @@ namespace sns {
                 //mgr.Cont(md, "y");
                 mgr.Axis();
                 //mgr.Box();
-                mgr.WriteGIF(filename_gif);
+                mgr.WritePNG(filename_image);
             } else { // Use GD for render plain image
                 int c_color;
 
@@ -735,11 +735,11 @@ namespace sns {
 
                 delete[] ddata;
 
-                FILE *fp = fopen(filename_gif, "wb");
+                FILE *fp = fopen(filename_image, "wb");
 
                 if (!fp) {
                     printf("Cannot open output file %s for writing.\n",
-                           filename_gif);
+                           filename_image);
                     gdImageDestroy(im);
                     return 1;
                 }
