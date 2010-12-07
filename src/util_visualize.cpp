@@ -354,6 +354,11 @@ namespace sns {
                     p_params->st = (grid_t[nt-1] + grid_t[nt-2])/2;
                     double r = 0, t = 0;
 
+                    if (p_params->debug) {
+                        printf("sr: %lf\n", p_params->sr);
+                        printf("st: %lf\n", p_params->st);
+                    }
+
                     if (p_params->to_width < 0) {
                         p_params->to_width = 2*static_cast<int>( p_params->sr / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1; // NOLINT
                     }
@@ -361,10 +366,27 @@ namespace sns {
                         p_params->to_height = 2*static_cast<int>( p_params->st / sqrt((grid_t[nt-1]-grid_t[nt-2])*(grid_t[static_cast<int>((nt-1)/2)-1]-grid_t[static_cast<int>((nt-1)/2)])) ) + 1; // NOLINT
                     }
 
+                    // Debug {{{
+                    if (p_params->debug) {
+                        // printf("\033[0;33mDebug {{{\n");
+
+                        printf("In --axial-all\n");
+                        printf("to_width: %d\n", p_params->to_width);
+                        printf("to_height: %d\n", p_params->to_height);
+                        printf("sr: %lf\n", p_params->sr);
+                        printf("st: %lf\n", p_params->st);
+
+                        // printf("Debug }}}\033[0m\n");
+                    }
+
                     if (p_params->file_type == t_complex_double) {
-                        data = new std::complex<double>[p_params->to_width*p_params->to_height]; // NOLINT
+                        data = new std::complex<double>[
+                                   p_params->to_width*p_params->to_height
+                               ];
                     } else {
-                        data = new double[p_params->to_width*p_params->to_height]; // NOLINT
+                        data = new double[
+                                   p_params->to_width*p_params->to_height
+                               ];
                     }
                     if (!data) {
                         printf("Cannot allocate memory for data.\n");
@@ -686,14 +708,15 @@ namespace sns {
             if (p_params->use_mathgl && p_params->bin_axial_all) {
                 mglData md_x, md_y, md_z;
 
-                // if (p_params->bin_axial || p_params->bin_axial_all) {
-                if (p_params->bin_axial_all) {
-                    md.Create(p_params->to_width, p_params->to_height);
-                    for (j = 0; j < p_params->to_height; j++) {
-                        for (i = 0; i < p_params->to_width; i++) {
-                            md.a[p_params->to_width*j+i] =
-                                                  ddata[p_params->to_width*j+i];
-                        }
+                // Debug {{{
+                if (p_params->debug) {
+                    // printf("\033[0;33mDebug {{{\n");
+                    printf("p_params->to_width: %d\n", p_params->to_width);
+                    printf("p_params->to_height: %d\n", p_params->to_height);
+                    // printf("Debug }}}\033[0m\n");
+                }
+                // Debug }}}
+
                 md_x.Create(p_params->to_width, p_params->to_height);
                 md_y.Create(p_params->to_width, p_params->to_height);
                 md_z.Create(p_params->to_width, p_params->to_height);
