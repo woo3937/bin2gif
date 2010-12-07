@@ -351,14 +351,14 @@ namespace sns {
 
                     // Convert axial to square
                     p_params->sr = (grid_r[nr-1] + grid_r[nr-2])/2;
-                    p_params->st = (grid_t[nt-1] + grid_r[nt-2])/2;
+                    p_params->st = (grid_t[nt-1] + grid_t[nt-2])/2;
                     double r = 0, t = 0;
 
                     if (p_params->to_width < 0) {
-                        p_params->to_width = 2*static_cast<int>( p_params->st / sqrt((grid_t[nt-1]-grid_t[nt-2])*(grid_t[static_cast<int>((nt-1)/2)-1]-grid_t[static_cast<int>((nt-1)/2)])) ) + 1; // NOLINT
+                        p_params->to_width = 2*static_cast<int>( p_params->sr / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1; // NOLINT
                     }
                     if (p_params->to_height < 0) {
-                        p_params->to_height = 2*static_cast<int>( p_params->sr / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1; // NOLINT
+                        p_params->to_height = 2*static_cast<int>( p_params->st / sqrt((grid_t[nt-1]-grid_t[nt-2])*(grid_t[static_cast<int>((nt-1)/2)-1]-grid_t[static_cast<int>((nt-1)/2)])) ) + 1; // NOLINT
                     }
 
                     if (p_params->file_type == t_complex_double) {
@@ -378,10 +378,10 @@ namespace sns {
 
                     // Convert axial to square
                     int k_r = 0, k_t = 0;
-                    for (j = 0; j < p_params->to_height/2; j++) {
-                        for (i = 0; i < p_params->to_width; i++) {
-                            r = p_params->sr * 2 * static_cast<double>(j) / p_params->to_height; // NOLINT
-                            t = p_params->st * 4 * static_cast<double>(i - p_params->to_width/2) / p_params->to_width; // NOLINT
+                    for (j = 0; j < p_params->to_height; j++) {
+                        for (i = 0; i < p_params->to_width/2; i++) {
+                            r = p_params->sr * 2 * static_cast<double>(i) / p_params->to_width; // NOLINT
+                            t = p_params->st * 2 * static_cast<double>(j - p_params->to_height/2) / p_params->to_height; // NOLINT
 
                             if (r < grid_r[k_r]) {
                                 for (; k_r >= 0; k_r--) {
@@ -412,17 +412,17 @@ namespace sns {
                             }
 
                             if (p_params->file_type == t_complex_double) {
-                                data_cd[p_params->to_width*(p_params->to_height/2 + j) + (p_params->to_width - 1 - i)] =                                 // NOLINT
-                                    interpolate2D< std::complex<double> >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],                       // NOLINT
-                                                                      axdata_cd[nr*k_t + k_r], axdata_cd[nr*(k_t+1) + k_r],                              // NOLINT
-                                                                      axdata_cd[nr*k_t + (k_r+1)], axdata_cd[nr*(k_t+1) + (k_r+1)], r, t);               // NOLINT
-                                data_cd[p_params->to_width*(p_params->to_height/2 - 1 - j) + (p_params->to_width - 1 - i)] = data_cd[p_params->to_width*(p_params->to_height/2 + j) + (p_params->to_width - 1 - i)]; // NOLINT
+                                data_cd[p_params->to_width*j + (p_params->to_width/2 + i)] =                                                                  // NOLINT
+                                    interpolate2D< std::complex<double> >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],                            // NOLINT
+                                                                           axdata_cd[nr*k_t + k_r], axdata_cd[nr*(k_t+1) + k_r],                              // NOLINT
+                                                                           axdata_cd[nr*k_t + (k_r+1)], axdata_cd[nr*(k_t+1) + (k_r+1)], r, t);               // NOLINT
+                                data_cd[p_params->to_width*j + (p_params->to_width/2 - 1 - i)] = data_cd[p_params->to_width*j + (p_params->to_width/2 + i)];  // NOLINT
                             } else {
-                                data_d[p_params->to_width*(p_params->to_height/2 + j) + (p_params->to_width - 1 - i)] =                                  // NOLINT
-                                    interpolate2D< double >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],                                     // NOLINT
-                                                             axdata_d[nr*k_t + k_r], axdata_d[nr*(k_t+1) + k_r],                                         // NOLINT
-                                                             axdata_d[nr*k_t + (k_r+1)], axdata_d[nr*(k_t+1) + (k_r+1)], r, t);                          // NOLINT
-                                data_d[p_params->to_width*(p_params->to_height/2 - 1 - j) + (p_params->to_width - 1 - i)] = data_d[p_params->to_width*(p_params->to_height/2 + j) + (p_params->to_width - 1 - i)]; // NOLINT
+                                data_d[p_params->to_width*j + (p_params->to_width/2 + i)] =                                                                   // NOLINT
+                                    interpolate2D< double >(grid_r[k_r], grid_r[k_r+1], grid_t[k_t], grid_t[k_t+1],                                          // NOLINT
+                                                             axdata_d[nr*k_t + k_r], axdata_d[nr*(k_t+1) + k_r],                                            // NOLINT
+                                                             axdata_d[nr*k_t + (k_r+1)], axdata_d[nr*(k_t+1) + (k_r+1)], r, t);                             // NOLINT
+                                data_d[p_params->to_width*j + (p_params->to_width/2 - 1 - i)] = data_d[p_params->to_width*j + (p_params->to_width/2 + i)];   // NOLINT
                             }
                         }
                     }
@@ -683,8 +683,8 @@ namespace sns {
             }
             // Debug }}}
 
-            if (p_params->use_mathgl) {
-                mglData md;
+            if (p_params->use_mathgl && p_params->bin_axial_all) {
+                mglData md_x, md_y, md_z;
 
                 // if (p_params->bin_axial || p_params->bin_axial_all) {
                 if (p_params->bin_axial_all) {
@@ -694,24 +694,30 @@ namespace sns {
                             md.a[p_params->to_width*j+i] =
                                                   ddata[p_params->to_width*j+i];
                         }
+                md_x.Create(p_params->to_width, p_params->to_height);
+                md_y.Create(p_params->to_width, p_params->to_height);
+                md_z.Create(p_params->to_width, p_params->to_height);
+
+                for (j = 0; j < p_params->to_height; j++) { // t
+                    for (i = 0; i < p_params->to_width; i++) { // r
+                        md_x.a[p_params->to_width*j+i] = -p_params->sr +
+                              2.0 * p_params->sr *
+                                  static_cast<double>(i)/p_params->to_width;
+                        md_y.a[p_params->to_width*j+i] = -p_params->st +
+                              2.0 * p_params->st *
+                                  static_cast<double>(j)/p_params->to_height;
+                        md_z.a[p_params->to_width*j+i] =
+                                              ddata[p_params->to_width*j+i];
+                        md_y.a[p_params->to_width*j+i] *= -1.0;
                     }
                 }
 
                 mglGraphZB mgr(2048, 1024);
                 mgr.SetCut(false);
 
-
-                if (p_params->bin_axial_all) {
-                    p_params->sr = static_cast<int>(p_params->sr + 0.5);
-                    p_params->st = static_cast<int>(p_params->st + 0.5);
-
-                    // TODO: Fix d_min
-                    d_max = static_cast<int>(d_max + 0.5);
-
-                    mgr.SetRanges (-p_params->sr, p_params->sr,
-                                   -p_params->st, p_params->st,
-                                   d_min, d_max);
-                }
+                // TODO: Fix d_min
+                d_max = static_cast<int>(d_max + 0.5);
+                d_min = d_max/10.;
 
                 //mgr.Light(true);
                 //mgr.Light(0, mglPoint(0, 0, 1));
@@ -719,19 +725,31 @@ namespace sns {
                 //mgr.Colorbar();
 
                 mgr.SubPlot(2, 1, 0);
+                mgr.SetRanges(-2, 2, -2, 2, d_min, d_max);
                 //mgr.Aspect(p_params->sr, p_params->st, 1);
-                mgr.Surf(md);
+                mgr.SetTicks('x', 1, 1, 0);
+                mgr.SetTicks('y', 1, 1, 0);
+                //mgr.SetRanges(-1, 1, -1, 1, d_min, d_max);
                 mgr.Axis();
-                mgr.Label('x', "t", 0);
-                mgr.Label('y', "r", 0);
+                mgr.Label('x', "r", 0);
+                mgr.Label('y', "t", 0);
+                mgr.Surf(md_x, md_y, md_z);
 
                 mgr.SubPlot(2, 1, 1);
-                mgr.Rotate(60, -20);
-                mgr.Surf(md);
+                mgr.Rotate(70 /*tilt*/, -40 /*rotate*/);
+                mgr.Aspect(0.5, 1.0, 0.5);
+                mgr.SetRanges(0, 2, -2, 2, d_min, d_max);
+               
+                //mgr.SetFunc("x", "y", "lg(z)");
+                mgr.SetFunc(0, 0, "lg(z)");
+                //mgr.SetTicks('z', 0);
+                //mgr.SetRanges(0, 1, -1, 1, d_min, d_max);
+                mgr.AdjustTicks("z");
                 mgr.Axis();
-                mgr.Label('x', "t", 0);
-                mgr.Label('y', "r", 0);
-                
+                mgr.Label('x', "r", 0);
+                mgr.Label('y', "t", 0);
+                mgr.Surf(md_x, md_y, md_z);
+
                 mgr.WritePNG(filename_image);
             } else { // Use GD for render plain image
                 int c_color;
