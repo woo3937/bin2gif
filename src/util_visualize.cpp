@@ -279,6 +279,8 @@ namespace sns {
 
                     // Convert axial to square
                     double radius = (grid_r[nr-1] + grid_r[nr-2])/2, r = 0;
+                    p_params->sr = radius;
+
 
                     if (p_params->to_width < 0) {
                         p_params->to_width = 2*static_cast<int>( radius / sqrt((grid_r[nr-1]-grid_r[nr-2])*(grid_r[1]-grid_r[0])) ) + 1; // NOLINT
@@ -705,7 +707,8 @@ namespace sns {
             }
             // Debug }}}
 
-            if (p_params->use_mathgl && p_params->bin_axial_all) {
+            if (p_params->use_mathgl &&
+                (p_params->bin_axial || p_params->bin_axial_all)) {
                 mglData md_x, md_y, md_z;
 
                 // Debug {{{
@@ -713,6 +716,8 @@ namespace sns {
                     // printf("\033[0;33mDebug {{{\n");
                     printf("p_params->to_width: %d\n", p_params->to_width);
                     printf("p_params->to_height: %d\n", p_params->to_height);
+                    printf("p_params->sr: %lf\n", p_params->sr);
+                    printf("p_params->st: %lf\n", p_params->st);
                     // printf("Debug }}}\033[0m\n");
                 }
                 // Debug }}}
@@ -721,22 +726,38 @@ namespace sns {
                 md_y.Create(p_params->to_width, p_params->to_height);
                 md_z.Create(p_params->to_width, p_params->to_height);
 
-                for (j = 0; j < p_params->to_height; j++) { // t
-                    for (i = 0; i < p_params->to_width; i++) { // r
-                        md_x.a[p_params->to_width*j+i] = -p_params->sr +
-                              2.0 * p_params->sr *
-                                  static_cast<double>(i)/p_params->to_width;
-                        md_y.a[p_params->to_width*j+i] = -p_params->st +
-                              2.0 * p_params->st *
-                                  static_cast<double>(j)/p_params->to_height;
-                        md_z.a[p_params->to_width*j+i] =
-                                              ddata[p_params->to_width*j+i];
-                        md_y.a[p_params->to_width*j+i] *= -1.0;
+                if (p_params->bin_axial_all) {
+                    for (j = 0; j < p_params->to_height; j++) { // t
+                        for (i = 0; i < p_params->to_width; i++) { // r
+                            md_x.a[p_params->to_width*j+i] = -p_params->sr +
+                                  2.0 * p_params->sr *
+                                      static_cast<double>(i)/p_params->to_width;
+                            md_y.a[p_params->to_width*j+i] = -p_params->st +
+                                  2.0 * p_params->st *
+                                      static_cast<double>(j)/p_params->to_height;
+                            md_z.a[p_params->to_width*j+i] =
+                                                  ddata[p_params->to_width*j+i];
+                            md_y.a[p_params->to_width*j+i] *= -1.0;
+                        }
+                    }
+                } else {
+                    for (j = 0; j < p_params->to_height; j++) { // t
+                        for (i = 0; i < p_params->to_width; i++) { // r
+                            md_x.a[p_params->to_width*j+i] = -p_params->sr +
+                                  2.0 * p_params->sr *
+                                      static_cast<double>(i)/p_params->to_width;
+                            md_y.a[p_params->to_width*j+i] = -p_params->sr +
+                                  2.0 * p_params->sr *
+                                      static_cast<double>(j)/p_params->to_height;
+                            md_z.a[p_params->to_width*j+i] =
+                                                  ddata[p_params->to_width*j+i];
+                        }
                     }
                 }
 
                 mglGraphZB mgr(2048, 1024);
                 mgr.SetCut(false);
+                //mgr.SetCut(true);
 
                 // TODO: Fix d_min
                 d_max = static_cast<int>(d_max + 0.5);
@@ -744,34 +765,46 @@ namespace sns {
 
                 //mgr.Light(true);
                 //mgr.Light(0, mglPoint(0, 0, 1));
-                //mgr.AdjustTicks();
                 //mgr.Colorbar();
-
-                mgr.SubPlot(2, 1, 0);
-                mgr.SetRanges(-2, 2, -2, 2, d_min, d_max);
-                //mgr.Aspect(p_params->sr, p_params->st, 1);
                 mgr.SetTicks('x', 1, 1, 0);
                 mgr.SetTicks('y', 1, 1, 0);
-                //mgr.SetRanges(-1, 1, -1, 1, d_min, d_max);
+
+                mgr.SubPlot(2, 1, 0);
+                mgr.Rotate(0, 90);
+                mgr.SetRanges(-2, 2, -2, 2, d_min, d_max);
+                mgr.AdjustTicks();
                 mgr.Axis();
-                mgr.Label('x', "r", 0);
-                mgr.Label('y', "t", 0);
+                if (p_params->bin_axial_all) {
+                    mgr.Label('x', "r", 0);
+                    mgr.Label('y', "t", 0);
+                } else {
+                    mgr.Label('y', "r", 0);
+                }
                 mgr.Surf(md_x, md_y, md_z);
 
                 mgr.SubPlot(2, 1, 1);
-                mgr.Rotate(70 /*tilt*/, -40 /*rotate*/);
-                mgr.Aspect(0.5, 1.0, 0.5);
-                mgr.SetRanges(0, 2, -2, 2, d_min, d_max);
-               
-                //mgr.SetFunc("x", "y", "lg(z)");
+                if (p_params->bin_axial_all) {
+                    mgr.Rotate(50 /*tilt*/, 70 /*rotate*/);
+                    mgr.Aspect(0.5, 1.0, 0.5);
+                    mgr.SetRanges(-1, 1, -2, 2, d_min, d_max);
+                } else {
+                    mgr.Rotate(60 /*tilt*/, -40 /*rotate*/);
+                    mgr.Aspect(1.0, 1.0, 0.5);
+                    mgr.SetRanges(-2, 2, -2, 2, d_min, d_max);
+                }
                 mgr.SetFunc(0, 0, "lg(z)");
-                //mgr.SetTicks('z', 0);
-                //mgr.SetRanges(0, 1, -1, 1, d_min, d_max);
+                mgr.SetTicks('z', 0);
                 mgr.AdjustTicks("z");
                 mgr.Axis();
-                mgr.Label('x', "r", 0);
-                mgr.Label('y', "t", 0);
+                if (p_params->bin_axial_all) {
+                    mgr.Label('x', "r", 0);
+                    mgr.Label('y', "t", 0);
+                } else {
+                    mgr.Label('x', "r", 0);
+                    mgr.Label('y', "r", 0);
+                }
                 mgr.Surf(md_x, md_y, md_z);
+                //mgr.ContD(0, md_x, md_y, md_z, "", 1);
 
                 mgr.WritePNG(filename_image);
             } else { // Use GD for render plain image
