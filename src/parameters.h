@@ -33,6 +33,7 @@ namespace sns {
 
         int bin_width;
         int bin_height;
+        bool autodetect_bin_sizes;
         char bin_type;
         binary_file_type file_type;
 

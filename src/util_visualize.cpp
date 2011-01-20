@@ -459,7 +459,7 @@ namespace sns {
                 delete[] axdata;
             } else {  // Standart square matrix
                 // Determine file type and image size {{{
-                if (p_params->bin_width == -1 || p_params->bin_height == -1) {
+                if (p_params->autodetect_bin_sizes) {
                     file_size = fs::file_size(filename)
                                 - p_params->bin_header
                                 - p_params->bin_footer;

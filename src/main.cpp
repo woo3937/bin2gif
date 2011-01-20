@@ -261,6 +261,7 @@ int main(int argc, char *argv[]) {
     // Don't rewrite existing gif's
     p_params.force = false;
 
+    p_params.autodetect_bin_sizes = true;
     p_params.bin_width = -1;   // Autodetect
     p_params.bin_height = -1;  // Autodetect
     p_params.bin_type = ' ';   // Autodetect
@@ -287,6 +288,9 @@ int main(int argc, char *argv[]) {
 
     // Parse program command line options
     get_program_options(argc, argv, &p_params);
+    if (p_params.bin_width > 0 && p_params.bin_height > 0) {
+        p_params.autodetect_bin_sizes = false;
+    }
 
     if (p_params.bin_axial && p_params.bin_axial_all) {
         printf("You should use only one option at same time: --axial OR --axial-all"); // NOLINT
