@@ -459,16 +459,14 @@ namespace sns {
                 delete[] axdata;
             } else {  // Standart square matrix
                 // Determine file type and image size {{{
+                file_size = fs::file_size(filename)
+                            - p_params->bin_header
+                            - p_params->bin_footer;
+                if (file_size <= 0) {
+                    printf("Cannot determine file size.\n");
+                    return NULL;
+                }
                 if (p_params->autodetect_bin_sizes) {
-                    file_size = fs::file_size(filename)
-                                - p_params->bin_header
-                                - p_params->bin_footer;
-
-                    if (file_size <= 0) {
-                        printf("Cannot determine file size.\n");
-                        return NULL;
-                    }
-
                     elements_in_file = file_size / sizeof(std::complex<double>);
                     n = static_cast<off_t>(sqrt(static_cast<double>(elements_in_file))); // NOLINT
                     if (elements_in_file != n*n) {
@@ -479,14 +477,28 @@ namespace sns {
 
                     p_params->bin_width = n;
                     p_params->bin_height = n;
-
-                    if (n < p_params->to_width) {
-                        p_params->to_width = n;
+                } else {
+                    elements_in_file = p_params->bin_width*p_params->bin_height;
+                    n = static_cast<off_t>(sqrt(static_cast<double>(elements_in_file))); // NOLINT
+                    if (elements_in_file*sizeof(double) == file_size) {
+                        p_params->file_type = t_double;
+                    } else if (elements_in_file*sizeof(std::complex<double>) == file_size) {
+                        p_params->file_type = t_complex_double;
+                    } else {
+                        printf("Cannot determine file type.\n");
+                        return NULL;
                     }
 
-                    if (n < p_params->to_height) {
-                        p_params->to_height = n;
-                    }
+                    p_params->bin_width = n;
+                    p_params->bin_height = n;
+                }
+
+                if (p_params->bin_width < p_params->to_width) {
+                    p_params->to_width = p_params->bin_width;
+                }
+
+                if (p_params->bin_height < p_params->to_height) {
+                    p_params->to_height = p_params->bin_height;
                 }
                 // }}}
 
