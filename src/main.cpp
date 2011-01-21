@@ -48,8 +48,8 @@ void display_help(const char *argv0) {
     printf("Supports 'double' and 'complex<double>' C/C++ data types.\n");
 
     printf("\nOptions:\n");
-    printf("    -s, --size <num>                     dimensions of data in binary file\n"); // NOLINT
-    printf("    -r, --resize <num>                   dimensions of produced image\n"); // NOLINT
+    printf("    -s, --size (<num>|<num>x<num>)       dimensions of data in binary file\n"); // NOLINT
+    printf("    -r, --resize (<num>|<num>x<num>)     dimensions of produced image\n"); // NOLINT
     printf("    -t, --type (double|d|complex|c)      type of binary data\n");
     printf("    -f, --func (abs|norm|real|imag|arg)  function for complex to real conversion\n"); // NOLINT
     printf("    -a, --amp <double>                   value of image color scale amplitude\n"); // NOLINT
@@ -150,10 +150,16 @@ void get_program_options(int argc, char *argv[],
             case 's':
                 sscanf(optarg, "%dx%d",
                        &p_params->bin_width, &p_params->bin_height);
+                if (p_params->bin_height < 0) {
+                    p_params->bin_height = p_params->bin_width;
+                }
                 break;
             case 'r':
                 sscanf(optarg, "%dx%d",
                        &p_params->to_width, &p_params->to_height);
+                if (p_params->to_height < 0) {
+                    p_params->to_height = p_params->to_width;
+                }
                 break;
             case 't':
                 p_params->bin_type = optarg[0];
@@ -320,6 +326,9 @@ int main(int argc, char *argv[]) {
 
         printf("Header: %d\n", p_params.bin_header);
         printf("Footer: %d\n", p_params.bin_footer);
+        printf("Autodetect input size: %s\n", p_params.autodetect_bin_sizes ? "yes" : "no");
+        printf("Input size: %dx%d\n", p_params.bin_width, p_params.bin_height);
+        printf("Output size: %dx%d\n", p_params.to_width, p_params.to_height);
         printf("Files/directories to process:\n");
 
         for (i = 0; i < p_params.file_patterns_count; i++) {
