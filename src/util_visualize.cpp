@@ -595,6 +595,7 @@ namespace sns {
             if (p_params->debug) {
                 // printf("\033[0;33mDebug {{{\n");
 
+                printf("\n");
                 printf("bin_width: %d\n", p_params->bin_width);
                 printf("bin_height: %d\n", p_params->bin_height);
 
